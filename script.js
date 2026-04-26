@@ -1,3 +1,16 @@
+window.toggleSidebar = toggleSidebar;
+window.adminClick = adminClick;
+window.openContact = openContact;
+window.toggleTheme = toggleTheme;
+window.searchPosts = searchPosts;
+window.adminLogin = adminLogin;
+window.adminLogout = adminLogout;
+window.changeFavicon = changeFavicon;
+window.openAbout = openAbout;
+window.openPrivacy = openPrivacy;
+window.openTerms = openTerms;
+window.watchAds = watchAds;
+
 // =====================
 // SUPABASE INIT
 // =====================
