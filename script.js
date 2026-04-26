@@ -291,6 +291,48 @@ function setupRealtime() {
     .subscribe();
 }
 
+async function changeFavicon() {
+  if (!admin) return alert("Admin only!");
+
+  let input = document.createElement("input");
+  input.type = "file";
+  input.accept = "image/png";
+
+  input.onchange = async () => {
+    let file = input.files[0];
+    if (!file) return;
+
+    let img = new Image();
+
+    img.onload = async () => {
+      if (img.width !== 128 || img.height !== 128) {
+        alert("❌ Favicon must be 128x128");
+        return;
+      }
+
+      const { error } = await db.storage
+        .from("favicon")
+        .upload("favicon.png", file, { upsert: true });
+
+      if (error) {
+        alert("❌ Upload failed");
+        return;
+      }
+
+      const { data } = db.storage.from("favicon")
+        .getPublicUrl("favicon.png");
+
+      document.getElementById("faviconTag").href = data.publicUrl;
+      document.querySelector("#sidebar img").src = data.publicUrl;
+
+      alert("✅ Favicon updated!");
+    };
+
+    img.src = URL.createObjectURL(file);
+  };
+
+  input.click();
+}
 // =====================
 // FAVICON FIX
 // =====================
