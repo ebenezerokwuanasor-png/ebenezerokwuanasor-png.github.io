@@ -2,14 +2,27 @@
 <html lang="en">
 <head>
 
-<!-- ✅ KEEP YOUR ORIGINAL SCRIPT (UNCHANGED) -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- ❌ REMOVE redirect Adsterra script if present -->
-<!-- (DO NOT paste the old direct script again) -->
+<title>Ebenezer.com</title>
 
-<!-- ✅ SAFE Ad Loader (NO redirect) -->
+<!-- SEO -->
+<meta name="description" content="Official website of Okwuanasor Ebenezer Onyekachukwu">
+<meta name="author" content="Okwuanasor Ebenezer">
+
+<!-- Favicon -->
+<link id="faviconTag" rel="icon" href="favicon.png">
+
+<!-- CSS -->
+<link rel="stylesheet" href="style.css">
+
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- SAFE ADSTERA (NO REDIRECT) -->
 <script>
-function loadAdsterraAd(){
+function loadAd(){
     let script=document.createElement("script");
     script.src="https://pl29052599.profitablecpmratenetwork.com/24/cb/b7/24cbb72257475dcd544b0346aee1dd35.js";
     script.async=true;
@@ -18,151 +31,34 @@ function loadAdsterraAd(){
 }
 </script>
 
-<meta name="google-adsense-account" content="ca-pub-5102186817655979">
-<meta name="msvalidate.01" content="01B2794A593FD71D9B404D5559012520" />
-<meta name="google-site-verification" content="iRwPSc9OUOAsGkfU9MzqmVYmDFWjwTVZHENKnB6eZJI" />
-
-<meta name="description" content="Official website of Okwuanasor Ebenezer Onyekachukwu, a writer sharing posts, ideas, and media content.">
-<meta name="keywords" content="Ebenezer, Writer, Blog, Nigeria, Author, Posts, Personal Website">
-<meta name="author" content="Okwuanasor Ebenezer">
-
-<meta property="og:title" content="Ebenezer.com">
-<meta property="og:description" content="Official website of Okwuanasor Ebenezer Onyekachukwu, a writer sharing ideas and posts.">
-<meta property="og:image" content="favicon.png">
-<meta property="og:type" content="website">
-
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Ebenezer.com</title>
-
-<link id="faviconTag" rel="icon" href="favicon.png" sizes="128x128">
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<script>
-// ✅ YOUR ORIGINAL (UNCHANGED)
-const SUPABASE_URL = "https://fjiwrdecjftkflchjptr.supabase.co";
-const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqaXdyZGVjamZ0a2ZsY2hqcHRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5Nzk0OTQsImV4cCI6MjA4ODU1NTQ5NH0.tXe06ol03x8M0FLfk55_Wj6A2Y3mNny5t028gqZzYoU"; // keep yours
-
-const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
-const MEDIA_BUCKETS = Array.from({length: 200}, (_, i)=>`media${i+1}`);
-const FAVICON_BUCKET = "favicon";
-
-let admin=false, darkTheme=false;
-
-// ✅ KEEP favicon loader
-async function loadFavicon() {
-    try {
-        const { data } = await db.storage.from(FAVICON_BUCKET).download("favicon.png");
-        const url = URL.createObjectURL(data);
-        document.getElementById("faviconTag").href = url;
-        document.querySelector("#sidebar img").src = url;
-    } catch(e) {}
-}
-</script>
-
-<style>
-/* ✅ YOUR FULL ORIGINAL CSS (UNCHANGED) */
-body { margin:0; font-family:Arial,sans-serif; background:#f2f2f2; }
-
-.banner { padding:25px 20px; text-align:center; font-size:26px; font-weight:bold; color:white; background:linear-gradient(45deg,#ff6a00,#ee0979,#00c6ff,#ff00ff); background-size:400% 400%; animation: gradient 12s ease infinite; }
-
-.banner i { display:block; font-size:16px; font-style:italic; color:#ffe4e1; margin-top:5px; }
-
-@keyframes gradient {0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
-
-.menu { font-size:22px; padding:6px; cursor:pointer; position:fixed; top:10px; left:10px; z-index:20; border:none; border-radius:50%; background:linear-gradient(45deg,#ff6a00,#00c6ff,#ee0979,#ff00ff); color:white; }
-
-.sidebar { width:250px; height:100vh; background:#111; color:white; position:fixed; left:-300px; top:0; transition:0.3s; padding:20px; z-index:15; overflow-y:auto; }
-
-.sidebar.open { left:0; }
-
-.sidebar img { width:100px; height:100px; border-radius:50%; display:block; margin:auto; cursor:pointer; }
-
-.sidebar button { width:100%; margin-top:10px; padding:10px; border:none; background:#333; color:white; cursor:pointer; border-radius:6px; font-weight:bold; }
-
-.sidebar button:hover { background:#555; transform:scale(1.03); }
-
-.overlay { position:fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.7); display:none; justify-content:center; align-items:center; z-index:25; }
-
-.box { background:white; padding:30px; width:90%; max-width:550px; border-radius:12px; box-shadow:0 5px 15px rgba(0,0,0,.3); position:relative; }
-
-.closeBtn { position:absolute; top:10px; right:15px; cursor:pointer; font-weight:bold; font-size:18px; }
-
-input,textarea { width:100%; padding:10px; margin-top:10px; border-radius:6px; border:1px solid #ccc; box-sizing:border-box; }
-
-button.actionBtn { padding:10px 15px; margin-top:10px; border:none; border-radius:6px; background:#ff6a00; color:white; cursor:pointer; font-weight:bold; }
-
-button.actionBtn:hover { background:#ee0979; }
-
-.post { background:white; margin:20px; padding:15px; border-radius:10px; box-shadow:0 3px 10px rgba(0,0,0,.1); }
-
-.post img, .post video, .post audio { max-width:100%; border-radius:8px; margin-top:10px; }
-
-.shareBtn { margin-top:8px; padding:5px 10px; background:#00c6ff; color:white; border:none; border-radius:5px; cursor:pointer; }
-
-.shareBtn:hover { background:#0077aa; }
-
-.search-bar { margin:15px auto; max-width:500px; display:flex; }
-
-.search-bar input { flex:1; padding:8px; border-radius:6px 0 0 6px; border:1px solid #ccc; }
-
-.search-bar button { padding:8px 15px; border:none; background:#ff6a00; color:white; cursor:pointer; border-radius:0 6px 6px 0; }
-
-/* ✅ NEW (ADS OVERLAY ONLY — DOES NOT BREAK ANYTHING) */
-.adOverlay{
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-background:rgba(0,0,0,.85);
-display:none;
-justify-content:center;
-align-items:center;
-z-index:9999;
-}
-
-.adBox{
-background:white;
-padding:20px;
-width:90%;
-max-width:600px;
-border-radius:12px;
-position:relative;
-}
-
-.adClose{
-position:absolute;
-top:10px;
-right:15px;
-cursor:pointer;
-font-weight:bold;
-}
-</style>
-
 </head>
-<body onload="loadFavicon()">
 
-<div class="banner">Ebenezer.com
-<i>The Official Website of Okwuanasor  Ebenezer Onyekachukwu</i></div>
+<body>
 
+<!-- ================= HEADER ================= -->
+<button class="menu" onclick="toggleSidebar()">☰</button>
+
+<div class="banner">
+Ebenezer.com
+<i>The Official Website of Okwuanasor Ebenezer Onyekachukwu</i>
+</div>
+
+<!-- ================= SEARCH ================= -->
 <div class="search-bar">
 <input id="searchInput" placeholder="Search posts...">
 <button onclick="searchPosts()">Search</button>
 </div>
 
-<button class="menu" onclick="toggleSidebar()">☰</button>
-
+<!-- ================= SIDEBAR ================= -->
 <div class="sidebar" id="sidebar">
-<img id="sidebarFavicon" src="favicon.png" onclick="changeFavicon()">
+
+<img id="sidebarFavicon" src="favicon.png">
 
 <button onclick="adminClick()">Admin</button>
 <button onclick="openContact()">Contact</button>
 <button onclick="toggleTheme()">Theme</button>
 
-<!-- ✅ NEW FEATURES ADDED (NO REMOVAL) -->
+<!-- NEW FEATURES -->
 <button onclick="openAbout()">About</button>
 <button onclick="openPrivacy()">Privacy</button>
 <button onclick="openTerms()">Terms</button>
@@ -170,398 +66,100 @@ font-weight:bold;
 
 </div>
 
+<!-- ================= POSTS ================= -->
 <div id="posts"></div>
 
-<!-- ✅ ADS OVERLAY (SAFE - NO REDIRECT) -->
-<div class="adOverlay" id="adOverlay">
-<div class="adBox">
-<span class="adClose" onclick="closeAds()">X</span>
+<!-- ================= ADS OVERLAY ================= -->
+<div class="overlay adOverlay" id="adOverlay">
+<div class="box adBox">
+<span class="closeBtn" onclick="closeAds()">X</span>
 <div id="adContainer"></div>
 </div>
 </div>
 
-<!-- ABOUT -->
+<!-- ================= LOADER ================= -->
+<div id="loader" class="loader">
+<div class="spinner"></div>
+<p id="loaderText">Please wait...</p>
+</div>
+
+<!-- ================= ABOUT ================= -->
 <div class="overlay" id="aboutOverlay">
 <div class="box">
 <span class="closeBtn" onclick="closeOverlay('aboutOverlay')">X</span>
 <h3>About</h3>
-<p>
-Welcome to Ebenezer.com — Official website of Okwuanasor Ebenezer Onyekachukwu.
-This platform shares posts, ideas, and media content.
-</p>
+<p>This platform shares posts, ideas, and media content.</p>
 </div>
 </div>
 
-<!-- PRIVACY -->
+<!-- ================= PRIVACY ================= -->
 <div class="overlay" id="privacyOverlay">
 <div class="box">
 <span class="closeBtn" onclick="closeOverlay('privacyOverlay')">X</span>
-<h3>Privacy Policy</h3>
-<p>
-We respect your privacy. This site may show advertisements but does not sell your personal data.
-</p>
+<h3>Privacy</h3>
+<p>Your data is safe. Ads may be displayed.</p>
 </div>
 </div>
 
-<!-- TERMS -->
+<!-- ================= TERMS ================= -->
 <div class="overlay" id="termsOverlay">
 <div class="box">
 <span class="closeBtn" onclick="closeOverlay('termsOverlay')">X</span>
-<h3>Terms & Conditions</h3>
-<p>
-By using this site, you agree to our terms. Content is owned by Ebenezer.com.
-</p>
+<h3>Terms</h3>
+<p>Using this site means you agree to our terms.</p>
 </div>
 </div>
 
-<!-- ADMIN LOGIN -->
-<div class="overlay" id="adminLogin">
-<div class="box">
-<span class="closeBtn" onclick="closeOverlay('adminLogin')">X</span>
-<h3>Admin Login</h3>
-<input id="adminEmail" placeholder="Email">
-<div style="position:relative;">
-<input id="adminPass" type="password" placeholder="Password">
-<button style="position:absolute; right:5px; top:5px;" onclick="togglePassword()">👁️</button>
-</div>
-<button class="actionBtn" onclick="adminLogin()">Login</button>
-</div>
-</div>
-
-<!-- ADMIN PANEL -->
-<div class="overlay" id="adminPanel">
-<div class="box">
-<span class="closeBtn" onclick="closeOverlay('adminPanel')">X</span>
-<h3>Admin Panel</h3>
-<input id="postTitle" placeholder="Post Title">
-<textarea id="postBody" placeholder="Post Content"></textarea>
-<input type="file" id="mediaFile">
-<input id="mediaURL" placeholder="Optional File URL">
-<button class="actionBtn" onclick="createPost()">Publish Post</button>
-<button class="actionBtn" onclick="deletePost()">Delete Post</button>
-<button class="actionBtn" onclick="changeFavicon()">Upload Favicon 128x128</button>
-<button class="actionBtn" onclick="adminLogout()">Logout</button>
-</div>
-</div>
-
-<!-- CONTACT -->
+<!-- ================= CONTACT ================= -->
 <div class="overlay" id="contactOverlay">
 <div class="box">
 <span class="closeBtn" onclick="closeOverlay('contactOverlay')">X</span>
-<h3>Contact</h3>
 <p>Email: ebenezerokwuanasor@gmail.com</p>
-<p>WhatsApp: 09045825791</p>
 </div>
 </div>
-<script>
 
-// =========================
-// SIDEBAR & UI
-// =========================
-function toggleSidebar(){
-document.getElementById("sidebar").classList.toggle("open");
-}
+<!-- ================= ADMIN LOGIN ================= -->
+<div class="overlay" id="adminLogin">
+<div class="box">
+<span class="closeBtn" onclick="closeOverlay('adminLogin')">X</span>
 
-function closeOverlay(id){
-document.getElementById(id).style.display="none";
-}
+<h3>Admin Login</h3>
 
-function toggleTheme(){
-darkTheme=!darkTheme;
-document.body.style.background = darkTheme ? "#222":"#f2f2f2";
-document.body.style.color = darkTheme ? "white":"black";
-}
+<input id="adminEmail" placeholder="Email">
 
-function togglePassword(){
-let p=document.getElementById("adminPass");
-p.type=p.type==="password"?"text":"password";
-}
+<div style="position:relative;">
+<input id="adminPass" type="password" placeholder="Password">
+<button onclick="togglePassword()">👁️</button>
+</div>
 
-// =========================
-// NEW OVERLAYS
-// =========================
-function openAbout(){ document.getElementById("aboutOverlay").style.display="flex"; }
-function openPrivacy(){ document.getElementById("privacyOverlay").style.display="flex"; }
-function openTerms(){ document.getElementById("termsOverlay").style.display="flex"; }
-function openContact(){ document.getElementById("contactOverlay").style.display="flex"; }
+<button onclick="adminLogin()">Login</button>
 
-// =========================
-// SAFE ADS (NO REDIRECT)
-// =========================
-function watchAds(){
-let overlay=document.getElementById("adOverlay");
-overlay.style.display="flex";
+</div>
+</div>
 
-loadAdsterraAd(); // from Part 1
+<!-- ================= ADMIN PANEL ================= -->
+<div class="overlay" id="adminPanel">
+<div class="box">
+<span class="closeBtn" onclick="closeOverlay('adminPanel')">X</span>
 
-setTimeout(closeAds,8000);
-}
+<h3>Admin Panel</h3>
 
-function closeAds(){
-document.getElementById("adOverlay").style.display="none";
-document.getElementById("adContainer").innerHTML="";
-}
+<input id="postTitle" placeholder="Post Title">
+<textarea id="postBody" placeholder="Post Content"></textarea>
 
-// =========================
-// SHARE WITH AD
-// =========================
-function shareWithAd(title,body){
+<input type="file" id="mediaFile">
+<input id="mediaURL" placeholder="Optional URL">
 
-watchAds();
+<button onclick="createPost()">Publish</button>
+<button onclick="deletePost()">Delete</button>
+<button onclick="changeFavicon()">Upload Favicon</button>
+<button onclick="adminLogout()">Logout</button>
 
-setTimeout(()=>{
-if(navigator.share){
-navigator.share({
-title:title,
-text:body.replace(/<[^>]+>/g,''),
-url:window.location.href
-});
-}else{
-alert("Sharing not supported on this device");
-}
-},4000);
+</div>
+</div>
 
-}
+<!-- ================= SCRIPT ================= -->
+<script src="script.js"></script>
 
-// =========================
-// LINK DETECTOR
-// =========================
-function detectLinks(text){
-return text.replace(
-/(https?:\/\/[^\s]+)/g,
-'<a href="$1" target="_blank" style="color:blue">$1</a>'
-);
-}
-
-// =========================
-// SEARCH (FIXED)
-// =========================
-function searchPosts(){
-let input=document.getElementById("searchInput").value.toLowerCase();
-
-document.querySelectorAll(".post").forEach(p=>{
-p.style.display = p.innerText.toLowerCase().includes(input) ? "block":"none";
-});
-}
-
-// =========================
-// ADMIN
-// =========================
-function adminClick(){
-if(admin){
-document.getElementById("adminPanel").style.display="flex";
-}else{
-document.getElementById("adminLogin").style.display="flex";
-}
-}
-
-async function adminLogin(){
-try{
-let email=document.getElementById("adminEmail").value;
-let pass=document.getElementById("adminPass").value;
-
-const { error } = await db.auth.signInWithPassword({
-email,
-password:pass
-});
-
-if(error) throw error;
-
-admin=true;
-closeOverlay("adminLogin");
-document.getElementById("adminPanel").style.display="flex";
-
-alert("✅ Login successful!");
-}catch(e){
-alert("❌ "+e.message);
-}
-}
-
-async function adminLogout(){
-await db.auth.signOut();
-admin=false;
-closeOverlay("adminPanel");
-alert("✅ Logged out!");
-}
-
-// =========================
-// UPLOAD (UNCHANGED LOGIC)
-// =========================
-async function uploadFile(file){
-if(!file) return "";
-
-for(let bucket of MEDIA_BUCKETS){
-try{
-let name = Date.now()+"_"+file.name;
-
-const { error } = await db.storage.from(bucket).upload(name,file);
-
-if(!error){
-return SUPABASE_URL+"/storage/v1/object/public/"+bucket+"/"+name;
-}
-}catch(e){
-continue;
-}
-}
-
-alert("❌ Upload failed in all buckets!");
-return null;
-}
-
-// =========================
-// CREATE POST (ENHANCED)
-// =========================
-async function createPost(){
-if(!admin) return alert("Admin only!");
-
-let title=document.getElementById("postTitle").value;
-let body=document.getElementById("postBody").value;
-
-if(!title.trim() || !body.trim()){
-return alert("❌ Fill all fields");
-}
-
-// detect links
-body = detectLinks(body);
-
-let file=document.getElementById("mediaFile").files[0];
-let url=document.getElementById("mediaURL").value;
-
-let media=file ? await uploadFile(file) : url;
-
-await db.from("posts").insert({
-title,
-body,
-media,
-type:"post",
-date:Date.now()
-});
-
-loadPosts();
-alert("✅ Post uploaded!");
-}
-
-// =========================
-// DELETE POST
-// =========================
-async function deletePost(){
-if(!admin) return alert("Admin only!");
-
-let id=prompt("Enter Post ID");
-if(!id) return;
-
-await db.from("posts").delete().eq("id",id);
-
-loadPosts();
-alert("✅ Post deleted!");
-}
-
-// =========================
-// MEDIA RENDER (FIXED)
-// =========================
-function renderMedia(url){
-
-if(!url) return "";
-
-if(url.match(/\.(jpg|jpeg|png|gif)$/i))
-return `<img src="${url}">`;
-
-if(url.match(/\.(mp4|webm)$/i))
-return `<video controls src="${url}"></video>`;
-
-if(url.match(/\.(mp3|wav|ogg)$/i))
-return `<audio controls src="${url}"></audio>`;
-
-return "";
-}
-
-// =========================
-// LOAD POSTS (FULL FIX)
-// =========================
-async function loadPosts(){
-
-let {data} = await db.from("posts").select("*").order("date",{ascending:false});
-
-let container=document.getElementById("posts");
-container.innerHTML="";
-
-if(!data) return;
-
-data.forEach(p=>{
-
-let div=document.createElement("div");
-div.className="post";
-
-div.innerHTML=`
-<h3>${p.title}</h3>
-<p>${p.body}</p>
-
-${renderMedia(p.media)}
-
-<div>Post ID: ${p.id}</div>
-
-<button class="shareBtn"
-onclick="shareWithAd('${p.title}','${p.body.replace(/'/g,"")}')">
-Share
-</button>
-`;
-
-container.appendChild(div);
-
-});
-}
-
-// =========================
-// FAVICON (UNCHANGED)
-// =========================
-async function changeFavicon(){
-if(!admin) return alert("Admin only!");
-
-let input=document.createElement("input");
-input.type="file";
-input.accept="image/png";
-
-input.onchange=async()=>{
-
-let file=input.files[0];
-if(!file) return;
-
-let img=new Image();
-
-img.onload=async()=>{
-
-if(img.width!==128 || img.height!==128){
-alert("❌ Must be 128x128");
-return;
-}
-
-const { error } = await db.storage.from(FAVICON_BUCKET)
-.upload("favicon.png",file,{upsert:true});
-
-if(error) return alert("❌ Upload failed");
-
-const url = SUPABASE_URL+"/storage/v1/object/public/"+FAVICON_BUCKET+"/favicon.png";
-
-document.getElementById("faviconTag").href=url;
-document.querySelector("#sidebar img").src=url;
-
-alert("✅ Favicon updated!");
-};
-
-img.src=URL.createObjectURL(file);
-};
-
-input.click();
-}
-
-// =========================
-// INIT (CRASH FIX)
-// =========================
-window.onload = ()=>{
-loadFavicon();
-loadPosts();
-};
-
-</script>
 </body>
 </html>
