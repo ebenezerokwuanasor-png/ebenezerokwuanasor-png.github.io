@@ -208,10 +208,9 @@ async function likePost(id) {
 // COMMENT SYSTEM
 // =======================
 async function commentPost(id) {
-  if (!guard()) return;
 
-  const name = prompt("Name:");
-  const text = prompt("Comment:");
+  const name = prompt("Your name:");
+  const text = prompt("Your comment:");
 
   if (!name || !text) return;
 
