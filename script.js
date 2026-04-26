@@ -80,8 +80,26 @@ function openTerms() {
 // =====================
 function toggleTheme() {
   darkTheme = !darkTheme;
-  document.body.style.background = darkTheme ? "#dcdcdc" : "#f2f2f2";
-  document.body.style.color = darkTheme ? "#111" : "#000";
+
+  if (darkTheme) {
+    document.body.style.background = "#d6d6d6";   // soft grey (NOT black)
+    document.body.style.color = "#111";
+
+    // fix posts readability
+    document.querySelectorAll(".post").forEach(p => {
+      p.style.background = "#ffffff";
+      p.style.color = "#111";
+    });
+
+  } else {
+    document.body.style.background = "#f2f2f2";
+    document.body.style.color = "#000";
+
+    document.querySelectorAll(".post").forEach(p => {
+      p.style.background = "#fff";
+      p.style.color = "#000";
+    });
+  }
 }
 
 // =====================
