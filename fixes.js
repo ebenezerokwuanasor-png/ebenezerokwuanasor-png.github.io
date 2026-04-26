@@ -287,4 +287,5 @@ window.watchAds = function(){
     overlay.style.display="none";
     box.innerHTML="";
   },8000);
-};
+}
+}
