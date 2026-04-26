@@ -256,19 +256,27 @@ function sharePost(postId) {
 // =====================
 // ADS SYSTEM (FIXED)
 // =====================
-function showAd(callback) {
-  const box = document.getElementById("adOverlay");
-  box.style.display = "flex";
+function watchAds(callback) {
+  const overlay = document.getElementById("adOverlay");
+  const container = document.getElementById("adContainer");
 
-  let script = document.createElement("script");
+  overlay.style.display = "flex";
+  container.innerHTML = "";
+
+  // inject your Adsterra script properly
+  const script = document.createElement("script");
   script.src = "https://pl29052599.profitablecpmratenetwork.com/24/cb/b7/24cbb72257475dcd544b0346aee1dd35.js";
-  document.getElementById("adContainer").appendChild(script);
+  script.async = true;
 
+  container.appendChild(script);
+
+  // auto close after 6–8 sec
   setTimeout(() => {
-    box.style.display = "none";
-    document.getElementById("adContainer").innerHTML = "";
-    callback();
-  }, 6000);
+    overlay.style.display = "none";
+    container.innerHTML = "";
+
+    if (callback) callback();
+  }, 7000);
 }
 
 // =====================
