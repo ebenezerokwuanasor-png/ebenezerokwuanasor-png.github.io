@@ -12,61 +12,50 @@ window.addEventListener("DOMContentLoaded", () => {
 // =======================
 function bindButtons(){
 
-  // Admin
-  let adminBtn = document.querySelector("button[onclick='adminClick()']");
-  if(adminBtn){
-    adminBtn.onclick = () => {
-      if(window.admin){
-        document.getElementById("adminPanel").style.display = "flex";
-      }else{
-        document.getElementById("adminLogin").style.display = "flex";
-      }
-    };
-  }
+  // ABOUT
+  document.querySelectorAll("button").forEach(btn => {
+    let text = btn.innerText.toLowerCase();
 
-  // Contact
-  let contactBtn = document.querySelector("button[onclick='openContact()']");
-  if(contactBtn){
-    contactBtn.onclick = () => {
-      document.getElementById("contactOverlay").style.display = "flex";
-    };
-  }
+    if(text.includes("about")){
+      btn.onclick = () => {
+        document.getElementById("aboutOverlay").style.display = "flex";
+      };
+    }
 
-  // About
-  let aboutBtn = document.querySelector("button[onclick='openAbout()']");
-  if(aboutBtn){
-    aboutBtn.onclick = () => {
-      document.getElementById("aboutOverlay").style.display = "flex";
-    };
-  }
+    if(text.includes("privacy")){
+      btn.onclick = () => {
+        document.getElementById("privacyOverlay").style.display = "flex";
+      };
+    }
 
-  // Privacy
-  let privacyBtn = document.querySelector("button[onclick='openPrivacy()']");
-  if(privacyBtn){
-    privacyBtn.onclick = () => {
-      document.getElementById("privacyOverlay").style.display = "flex";
-    };
-  }
+    if(text.includes("terms")){
+      btn.onclick = () => {
+        document.getElementById("termsOverlay").style.display = "flex";
+      };
+    }
 
-  // Terms
-  let termsBtn = document.querySelector("button[onclick='openTerms()']");
-  if(termsBtn){
-    termsBtn.onclick = () => {
-      document.getElementById("termsOverlay").style.display = "flex";
-    };
-  }
+    if(text.includes("contact")){
+      btn.onclick = () => {
+        document.getElementById("contactOverlay").style.display = "flex";
+      };
+    }
 
-  // Watch Ads
-  let adsBtn = document.querySelector("button[onclick='watchAds()']");
-  if(adsBtn){
-    adsBtn.onclick = () => watchAds();
-  }
+    if(text.includes("watch ads")){
+      btn.onclick = () => watchAds();
+    }
 
-  // Search button fix
-  let searchBtn = document.querySelector(".search-bar button");
-  if(searchBtn){
-    searchBtn.onclick = () => searchPosts();
-  }
+    if(text.includes("admin")){
+      btn.onclick = () => {
+        if(window.admin){
+          document.getElementById("adminPanel").style.display = "flex";
+        }else{
+          document.getElementById("adminLogin").style.display = "flex";
+        }
+      };
+    }
+
+  });
+
 }
 
 // =======================
@@ -82,7 +71,7 @@ function fixCloseButtons(){
 }
 
 // =======================
-// 🔥 PASSWORD TOGGLE FIX
+// 🔥 PASSWOTOGGfunctionX
 // =======================
 function fixPasswordToggle(){
   let pass = document.getElementById("adminPass");
