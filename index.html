@@ -7,35 +7,20 @@
 
 <title>Ebenezer.com</title>
 
-<!-- SEO -->
 <meta name="description" content="Official website of Okwuanasor Ebenezer Onyekachukwu">
 <meta name="author" content="Okwuanasor Ebenezer">
 
-<!-- Favicon -->
 <link id="faviconTag" rel="icon" href="favicon.png">
 
-<!-- CSS -->
 <link rel="stylesheet" href="style.css">
 
-<!-- Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<!-- SAFE ADSTERA (NO REDIRECT) -->
-<script>
-function loadAd(){
-    let script=document.createElement("script");
-    script.src="https://pl29052599.profitablecpmratenetwork.com/24/cb/b7/24cbb72257475dcd544b0346aee1dd35.js";
-    script.async=true;
-    document.getElementById("adContainer").innerHTML="";
-    document.getElementById("adContainer").appendChild(script);
-}
-</script>
 
 </head>
 
 <body>
 
-<!-- ================= HEADER ================= -->
+<!-- HEADER -->
 <button class="menu" onclick="toggleSidebar()">☰</button>
 
 <div class="banner">
@@ -43,13 +28,13 @@ Ebenezer.com
 <i>The Official Website of Okwuanasor Ebenezer Onyekachukwu</i>
 </div>
 
-<!-- ================= SEARCH ================= -->
+<!-- SEARCH -->
 <div class="search-bar">
 <input id="searchInput" placeholder="Search posts...">
 <button onclick="searchPosts()">Search</button>
 </div>
 
-<!-- ================= SIDEBAR ================= -->
+<!-- SIDEBAR -->
 <div class="sidebar" id="sidebar">
 
 <img id="sidebarFavicon" src="favicon.png">
@@ -58,7 +43,6 @@ Ebenezer.com
 <button onclick="openContact()">Contact</button>
 <button onclick="toggleTheme()">Theme</button>
 
-<!-- NEW FEATURES -->
 <button onclick="openAbout()">About</button>
 <button onclick="openPrivacy()">Privacy</button>
 <button onclick="openTerms()">Terms</button>
@@ -66,105 +50,92 @@ Ebenezer.com
 
 </div>
 
-<!-- ================= POSTS ================= -->
+<!-- POSTS -->
 <div id="posts"></div>
 
-<!-- ================= ADS OVERLAY ================= -->
+<!-- ADS -->
 <div class="overlay adOverlay" id="adOverlay">
-<div class="box adBox">
-<span class="closeBtn" onclick="closeAds()">X</span>
-<div id="adContainer"></div>
-</div>
-</div>
-
-<!-- ================= LOADER ================= -->
-<div id="loader" class="loader">
-<div class="spinner"></div>
-<p id="loaderText">Please wait...</p>
+  <div class="box">
+    <span class="closeBtn" onclick="closeAds()">X</span>
+    <div id="adContainer"></div>
+  </div>
 </div>
 
-<!-- ================= ABOUT ================= -->
+<!-- ABOUT -->
 <div class="overlay" id="aboutOverlay">
-<div class="box">
-<span class="closeBtn" onclick="closeOverlay('aboutOverlay')">X</span>
-<h3>About</h3>
-<p>This platform shares posts, ideas, and media content.</p>
-</div>
+  <div class="box">
+    <span class="closeBtn" onclick="closeOverlay('aboutOverlay')">X</span>
+    <h3>About</h3>
+    <p>Official content platform.</p>
+  </div>
 </div>
 
-<!-- ================= PRIVACY ================= -->
+<!-- PRIVACY -->
 <div class="overlay" id="privacyOverlay">
-<div class="box">
-<span class="closeBtn" onclick="closeOverlay('privacyOverlay')">X</span>
-<h3>Privacy</h3>
-<p>Your data is safe. Ads may be displayed.</p>
-</div>
+  <div class="box">
+    <span class="closeBtn" onclick="closeOverlay('privacyOverlay')">X</span>
+    <h3>Privacy</h3>
+    <p>Your data is safe.</p>
+  </div>
 </div>
 
-<!-- ================= TERMS ================= -->
+<!-- TERMS -->
 <div class="overlay" id="termsOverlay">
-<div class="box">
-<span class="closeBtn" onclick="closeOverlay('termsOverlay')">X</span>
-<h3>Terms</h3>
-<p>Using this site means you agree to our terms.</p>
-</div>
+  <div class="box">
+    <span class="closeBtn" onclick="closeOverlay('termsOverlay')">X</span>
+    <h3>Terms</h3>
+    <p>Use responsibly.</p>
+  </div>
 </div>
 
-<!-- ================= CONTACT ================= -->
+<!-- CONTACT -->
 <div class="overlay" id="contactOverlay">
-<div class="box">
-<span class="closeBtn" onclick="closeOverlay('contactOverlay')">X</span>
-<p>Email: ebenezerokwuanasor@gmail.com</p>
-</div>
+  <div class="box">
+    <span class="closeBtn" onclick="closeOverlay('contactOverlay')">X</span>
+    <p>Email: ebenezerokwuanasor@gmail.com</p>
+  </div>
 </div>
 
-<!-- ================= ADMIN LOGIN ================= -->
+<!-- ADMIN LOGIN -->
 <div class="overlay" id="adminLogin">
-<div class="box">
-<span class="closeBtn" onclick="closeOverlay('adminLogin')">X</span>
+  <div class="box">
+    <span class="closeBtn" onclick="closeOverlay('adminLogin')">X</span>
 
-<h3>Admin Login</h3>
+    <h3>Admin Login</h3>
 
-<input id="adminEmail" placeholder="Email">
+    <input id="adminEmail" placeholder="Email">
 
-<div style="position:relative;">
-<input id="adminPass" type="password" placeholder="Password">
-<button onclick="togglePassword()">👁️</button>
+    <div style="position:relative;">
+      <input id="adminPass" type="password" placeholder="Password">
+      <button onclick="togglePassword()">👁️</button>
+    </div>
+
+    <button onclick="adminLogin()">Login</button>
+  </div>
 </div>
 
-<button onclick="adminLogin()">Login</button>
-
-</div>
-</div>
-
-<!-- ================= ADMIN PANEL ================= -->
+<!-- ADMIN PANEL -->
 <div class="overlay" id="adminPanel">
-<div class="box">
-<span class="closeBtn" onclick="closeOverlay('adminPanel')">X</span>
+  <div class="box">
+    <span class="closeBtn" onclick="closeOverlay('adminPanel')">X</span>
 
-<h3>Admin Panel</h3>
+    <h3>Admin Panel</h3>
 
-<input id="postTitle" placeholder="Post Title">
-<textarea id="postBody" placeholder="Post Content"></textarea>
+    <input id="postTitle" placeholder="Post Title">
+    <textarea id="postBody" placeholder="Post Content"></textarea>
 
-<input type="file" id="mediaFile">
-<input id="mediaURL" placeholder="Optional URL">
+    <input type="file" id="mediaFile">
+    <input id="mediaURL" placeholder="Optional URL">
 
-<button onclick="createPost()">Publish</button>
-<button onclick="deletePost()">Delete</button>
-<button onclick="changeFavicon()">Upload Favicon</button>
-<button onclick="adminLogout()">Logout</button>
-
+    <button onclick="createPost()">Publish</button>
+    <button onclick="deletePost()">Delete</button>
+    <button onclick="changeFavicon()">Upload Favicon</button>
+    <button onclick="adminLogout()">Logout</button>
+  </div>
 </div>
-</div>
 
-    <div id="successToast" style="display:none;">
-  <div class="toastBox">✅ Success</div>
-</div>
-    
-<!-- ================= SCRIPT ================= -->
+<!-- MAIN SCRIPT -->
 <script src="script.js"></script>
-<script src="fixes.js"></script>
 
 </body>
 </html>
