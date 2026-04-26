@@ -227,16 +227,16 @@ async function commentPost(id) {
 // SHARE (WITH AD GATE)
 // =======================
 function sharePost(id) {
-  watchAds(() => {
-    const url = window.location.origin + "?post=" + id;
 
-    if (navigator.share) {
-      navigator.share({ title: "Post", url });
-    } else {
-      alert(url);
-    }
-  });
+  const url = window.location.origin + "?post=" + id;
+
+  if (navigator.share) {
+    navigator.share({ url });
+  } else {
+    prompt("Copy link:", url);
+  }
 }
+
 
 // =======================
 // ADS (NO REDIRECT SAFE)
@@ -263,20 +263,45 @@ function watchAds(callback) {
 // SEARCH FIX
 // =======================
 function searchPosts() {
-  const q = searchInput.value.toLowerCase();
+
+  const q = document.getElementById("searchInput").value.toLowerCase();
 
   document.querySelectorAll(".post").forEach(p => {
-    p.style.display = p.innerText.toLowerCase().includes(q) ? "block" : "none";
+    p.style.display =
+      p.innerText.toLowerCase().includes(q)
+      ? "block"
+      : "none";
   });
 }
 
-// =======================
+// ======================
 // REALTIME FIX
-// =======================
+// ======================
 function setupRealtime() {
-  db.channel("posts").on("postgres_changes", { event: "*", schema: "public", table: "posts" }, loadPosts).subscribe();
-  db.channel("likes").on("postgres_changes", { event: "*", schema: "public", table: "likes" }, loadPosts).subscribe();
-  db.channel("comments").on("postgres_changes", { event: "*", schema: "public", table: "comments" }, loadPosts).subscribe();
+
+  db.channel("realtime-posts")
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "posts" },
+      () => loadPosts()
+    )
+    .subscribe();
+
+  db.channel("realtime-likes")
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "likes" },
+      () => loadPosts()
+    )
+    .subscribe();
+
+  db.channel("realtime-comments")
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "comments" },
+      () => loadPosts()
+    )
+    .subscribe();
 }
 
 // =======================
@@ -321,4 +346,13 @@ async function changeFavicon() {
   };
 
   input.click();
+}
+
+function downloadMedia(url) {
+  if (!url) return alert("No media");
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "download";
+  a.click();
 }
