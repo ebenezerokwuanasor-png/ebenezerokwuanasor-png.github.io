@@ -1,141 +1,154 @@
-window.showLoader = showLoader;
-window.hideLoader = hideLoader;
-
-// =======================
-// SAFE INIT
-// =======================
+// ==========================
+// GLOBAL INIT (SAFE)
+// ==========================
 document.addEventListener("DOMContentLoaded", () => {
-  bindUI();
+  bindAllButtons();
+  fixCloseButtons();
+  fixPasswordEye();
 });
 
-// =======================
-// LOADER
-// =======================
-function showLoader(text="Please wait..."){
-  let o = document.getElementById("loaderOverlay");
-  let t = document.getElementById("loaderText");
-  if(o){
-    t.innerText = text;
-    o.style.display = "flex";
+// ==========================
+// 🔄 LOADER (MANUAL ONLY)
+// ==========================
+window.showLoader = function(text="Please wait..."){
+  let el = document.getElementById("loaderOverlay");
+  let txt = document.getElementById("loaderText");
+
+  if(el){
+    txt.innerText = text;
+    el.style.display = "flex";
   }
-}
+};
 
-function hideLoader(){
-  let o = document.getElementById("loaderOverlay");
-  if(o) o.style.display = "none";
-}
+window.hideLoader = function(){
+  let el = document.getElementById("loaderOverlay");
+  if(el) el.style.display = "none";
+};
 
-// =======================
-// SUCCESS TOAST
-// =======================
-function showSuccess(msg){
-  let t = document.getElementById("successToast");
-  if(!t) return;
-  t.querySelector(".toastBox").innerText = "✅ " + msg;
-  t.style.display = "block";
-  setTimeout(()=> t.style.display="none",3000);
-}
+// ==========================
+// ✅ SUCCESS / ERROR ANIMATION
+// ==========================
+window.toast = function(msg, success=true){
+  let box = document.getElementById("successToast");
+  if(!box) return;
 
-// =======================
-// FIX BUTTONS (ALL)
-// =======================
-function bindUI(){
+  box.querySelector(".toastBox").innerText =
+    (success ? "✅ " : "❌ ") + msg;
 
-  // SIDEBAR BUTTONS
-  document.querySelectorAll(".sidebar button").forEach(btn=>{
-    let text = btn.innerText.toLowerCase();
+  box.style.display = "block";
+
+  setTimeout(()=> box.style.display="none", 2500);
+};
+
+// ==========================
+// 🔘 FIX ALL BUTTONS
+// ==========================
+function bindAllButtons(){
+
+  document.querySelectorAll(".sidebar button").forEach(btn => {
+
+    let t = btn.innerText.toLowerCase();
 
     btn.onclick = () => {
 
-      if(text.includes("admin")){
+      if(t.includes("admin")){
         if(window.admin){
-          openOverlay("adminPanel");
+          document.getElementById("adminPanel").style.display = "flex";
         }else{
-          openOverlay("adminLogin");
+          document.getElementById("adminLogin").style.display = "flex";
         }
       }
 
-      if(text.includes("contact")) openOverlay("contactOverlay");
-      if(text.includes("about")) openOverlay("aboutOverlay");
-      if(text.includes("privacy")) openOverlay("privacyOverlay");
-      if(text.includes("terms")) openOverlay("termsOverlay");
+      if(t.includes("contact"))
+        document.getElementById("contactOverlay").style.display = "flex";
 
-      if(text.includes("watch")) watchAds();
+      if(t.includes("about"))
+        document.getElementById("aboutOverlay").style.display = "flex";
+
+      if(t.includes("privacy"))
+        document.getElementById("privacyOverlay").style.display = "flex";
+
+      if(t.includes("terms"))
+        document.getElementById("termsOverlay").style.display = "flex";
+
+      if(t.includes("watch"))
+        watchAds();
     };
+
   });
 
-  // CLOSE BUTTONS
-  document.querySelectorAll(".closeBtn").forEach(btn=>{
-    btn.onclick = ()=> btn.closest(".overlay").style.display="none";
-  });
-
-  // PASSWORD TOGGLE
-  let pass = document.getElementById("adminPass");
-  if(pass){
-    let eye = pass.parentElement.querySelector("button");
-    if(eye){
-      eye.onclick = ()=>{
-        pass.type = pass.type==="password"?"text":"password";
-      };
-    }
-  }
-
-  // SEARCH FIX
+  // search fix
   let searchBtn = document.querySelector(".search-bar button");
   if(searchBtn){
-    searchBtn.onclick = ()=> searchPosts();
+    searchBtn.onclick = () => searchPosts();
   }
-
 }
 
-// =======================
-// OVERLAY HELPER
-// =======================
-function openOverlay(id){
-  let el = document.getElementById(id);
-  if(el) el.style.display = "flex";
+// ==========================
+// ❌ CLOSE BUTTON FIX (CRITICAL)
+// ==========================
+function fixCloseButtons(){
+  document.querySelectorAll(".closeBtn").forEach(btn => {
+    btn.onclick = () => {
+      let overlay = btn.closest(".overlay");
+      if(overlay) overlay.style.display = "none";
+    };
+  });
 }
 
-// =======================
-// ADMIN SESSION FIX
-// =======================
-supabase.auth.getSession().then(({data})=>{
-  if(data.session){
-    window.admin = true;
-  }
-});
+// ==========================
+// 👁 PASSWORD EYE FIX
+// ==========================
+function fixPasswordEye(){
+  let pass = document.getElementById("adminPass");
+  if(!pass) return;
 
-// =======================
-// LOGIN
-// =======================
+  let btn = pass.parentElement.querySelector("button");
+  if(btn){
+    btn.onclick = () => {
+      pass.type = pass.type === "password" ? "text" : "password";
+    };
+  }
+}
+
+// ==========================
+// 🔐 ADMIN LOGIN (FIXED)
+// ==========================
 window.adminLogin = async function(){
 
-  showLoader("Checking login...");
+  showLoader("Logging in...");
 
   try{
+
     let email = document.getElementById("adminEmail").value;
     let pass = document.getElementById("adminPass").value;
 
-    const { error } = await db.auth.signInWithPassword({email,password:pass});
+    const { error } = await db.auth.signInWithPassword({
+      email,
+      password: pass
+    });
+
     if(error) throw error;
 
     window.admin = true;
 
     hideLoader();
-    showSuccess("Login successful");
+    toast("Login successful", true);
 
-    openOverlay("adminPanel");
-    document.getElementById("adminLogin").style.display="none";
+    document.getElementById("adminLogin").style.display = "none";
+    document.getElementById("adminPanel").style.display = "flex";
 
   }catch(e){
+
     hideLoader();
-    alert("❌ "+e.message);
+    toast("Login failed", false);
+
   }
 };
 
-// =======================
-// LOGOUT (FIXED)
-// =======================
+// ==========================
+// 🚪 LOGOUT FIX
+// ==========================
 window.adminLogout = async function(){
 
   showLoader("Logging out...");
@@ -145,37 +158,29 @@ window.adminLogout = async function(){
   window.admin = false;
 
   hideLoader();
-  showSuccess("Logged out");
+  toast("Logged out", true);
 
-  document.getElementById("adminPanel").style.display="none";
+  document.getElementById("adminPanel").style.display = "none";
 };
 
-// =======================
-// PUBLISH POST (FIXED)
-// =======================
+// ==========================
+// 📝 PUBLISH POST FIX
+// ==========================
 window.createPost = async function(){
 
-  if(!window.admin) return alert("Admin only");
-
-  let title = document.getElementById("postTitle").value;
-  let body = document.getElementById("postBody").value;
-
-  if(!title || !body) return alert("Fill all fields");
+  if(!window.admin) return toast("Admin only", false);
 
   showLoader("Publishing post...");
 
   try{
 
+    let title = document.getElementById("postTitle").value;
+    let body = document.getElementById("postBody").value;
+
     let file = document.getElementById("mediaFile").files[0];
     let url = document.getElementById("mediaURL").value;
 
-    let media = "";
-
-    if(file){
-      media = await uploadFile(file);
-    }else if(url){
-      media = url;
-    }
+    let media = file ? await uploadFile(file) : url;
 
     await db.from("posts").insert({
       title,
@@ -185,58 +190,61 @@ window.createPost = async function(){
     });
 
     hideLoader();
-    showSuccess("Post published");
+    toast("Post published", true);
 
     loadPosts();
 
   }catch(e){
     hideLoader();
-    alert("❌ Failed");
+    toast("Publish failed", false);
   }
 };
 
-// =======================
-// DELETE POST (FIXED)
-// =======================
+// ==========================
+// 🗑 DELETE POST FIX
+// ==========================
 window.deletePost = async function(){
 
-  if(!window.admin) return alert("Admin only");
+  if(!window.admin) return toast("Admin only", false);
 
   let id = prompt("Post ID");
   if(!id) return;
 
-  showLoader("Deleting...");
+  showLoader("Deleting post...");
 
-  await db.from("posts").delete().eq("id",id);
+  await db.from("posts").delete().eq("id", id);
 
   hideLoader();
-  showSuccess("Deleted");
+  toast("Post deleted", true);
 
   loadPosts();
 };
 
-// =======================
-// FAVICON (FULL FIX)
-// =======================
+// ==========================
+// 🖼 FAVICON FIX (ADMIN ONLY WORKING)
+// ==========================
 window.changeFavicon = async function(){
 
-  if(!window.admin) return alert("Admin only");
+  if(!window.admin){
+    toast("Admin only", false);
+    return;
+  }
 
   let input = document.createElement("input");
-  input.type="file";
-  input.accept="image/png";
+  input.type = "file";
+  input.accept = "image/png";
 
-  input.onchange = async ()=>{
+  input.onchange = async () => {
 
     let file = input.files[0];
     if(!file) return;
 
     let img = new Image();
 
-    img.onload = async ()=>{
+    img.onload = async () => {
 
-      if(img.width!==128 || img.height!==128){
-        alert("Must be 128x128");
+      if(img.width !== 128 || img.height !== 128){
+        toast("Must be 128x128", false);
         return;
       }
 
@@ -244,20 +252,21 @@ window.changeFavicon = async function(){
 
       const { error } = await db.storage
         .from("favicon")
-        .upload("favicon.png",file,{upsert:true});
+        .upload("favicon.png", file, { upsert: true });
 
       if(error){
         hideLoader();
-        return alert("Upload failed");
+        toast("Upload failed", false);
+        return;
       }
 
-      let url = SUPABASE_URL+"/storage/v1/object/public/favicon/favicon.png";
+      let url = SUPABASE_URL + "/storage/v1/object/public/favicon/favicon.png";
 
       document.getElementById("faviconTag").href = url;
       document.getElementById("sidebarFavicon").src = url;
 
       hideLoader();
-      showSuccess("Favicon updated");
+      toast("Favicon updated", true);
 
     };
 
@@ -267,28 +276,26 @@ window.changeFavicon = async function(){
   input.click();
 };
 
-// =======================
-// ADS (REAL FIX)
-// =======================
+// ==========================
+// 📢 ADS (SAFE)
+// ==========================
 window.watchAds = function(){
 
-  let overlay = document.getElementById("adOverlay");
-  let box = document.getElementById("adContainer");
+  let o = document.getElementById("adOverlay");
+  let c = document.getElementById("adContainer");
 
-  if(!overlay || !box) return alert("Ad container missing");
+  if(!o || !c) return;
 
-  overlay.style.display="flex";
-  box.innerHTML="";
+  o.style.display = "flex";
+  c.innerHTML = "";
 
-  let script = document.createElement("script");
-  script.src="https://pl29052599.profitablecpmratenetwork.com/24/cb/b7/24cbb72257475dcd544b0346aee1dd35.js";
-  script.async=true;
+  let s = document.createElement("script");
+  s.src = "https://pl29052599.profitablecpmratenetwork.com/24/cb/b7/24cbb72257475dcd544b0346aee1dd35.js";
 
-  box.appendChild(script);
+  c.appendChild(s);
 
   setTimeout(()=>{
-    overlay.style.display="none";
-    box.innerHTML="";
+    o.style.display = "none";
+    c.innerHTML = "";
   },8000);
-}
-}
+};
