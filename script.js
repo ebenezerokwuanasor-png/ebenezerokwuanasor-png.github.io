@@ -1,8 +1,8 @@
 // =========================
-// SUPABASE AUTH & URL CONFIG
+// SUPABASE INIT
 // =========================
 const SUPABASE_URL = "https://fjiwrdecjftkflchjptr.supabase.co";
-const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqaXdyZGVjamZ0a2ZsY2hqcHRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5Nzk0OTQsImV4cCI6MjA4ODU1NTQ5NH0.tXe06ol03x8M0FLfk55_Wj6A2Y3mNny5t028gqZzYoU";  // Replace with your actual anon key
+const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqaXdyZGVjamZ0a2ZsY2hqcHRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5Nzk0OTQsImV4cCI6MjA4ODU1NTQ5NH0.tXe06ol03x8M0FLfk55_Wj6A2Y3mNny5t028gqZzYoU";
 
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
@@ -10,223 +10,218 @@ const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 // GLOBAL STATE
 // =========================
 let admin = false;
-let darkMode = false;
-let currentUser = null;
+let dark = false;
+
+// cookies helpers
+function setCookie(name,value,days){
+let d=new Date();
+d.setTime(d.getTime()+(days*24*60*60*1000));
+document.cookie = name+"="+value+";expires="+d.toUTCString()+";path=/";
+}
+
+function getCookie(name){
+let v=document.cookie.match('(^|;) ?'+name+'=([^;]*)(;|$)');
+return v?v[2]:null;
+}
 
 // =========================
-// SIDEBAR FUNCTIONALITY
+// ADSTERA SAFE LOAD
+// =========================
+function loadAd(){
+let s=document.createElement("script");
+s.src="https://pl29052599.profitablecpmratenetwork.com/24/cb/b7/24cbb72257475dcd544b0346aee1dd35.js";
+s.async=true;
+document.getElementById("adContainer").innerHTML="";
+document.getElementById("adContainer").appendChild(s);
+}
+
+// =========================
+// SIDEBAR
 // =========================
 function toggleSidebar(){
-    document.getElementById("sidebar").classList.toggle("open");
+document.getElementById("sidebar").classList.toggle("open");
 }
 
 // =========================
-// OVERLAY HANDLERS (ADMIN, MODAL, ETC)
+// OVERLAYS
 // =========================
 function openOverlay(id){
-    document.getElementById(id).style.display = "flex";
+document.getElementById(id).style.display="flex";
 }
-
 function closeOverlay(id){
-    document.getElementById(id).style.display = "none";
+document.getElementById(id).style.display="none";
 }
 
 // =========================
-// THEME TOGGLE (SOFT DIM MODE)
+// THEME (SOFT DIM FIX)
 // =========================
 function toggleTheme(){
-    darkMode = !darkMode;
-    document.body.style.background = darkMode ? "#1a1a1a" : "#f2f2f2";
-    document.body.style.color = darkMode ? "#f5f5f5" : "#111";
-    document.querySelectorAll(".post").forEach(post => {
-        post.style.background = darkMode ? "#2a2a2a" : "#fff";
-    });
+dark=!dark;
+document.body.style.background = dark ? "#e6e6e6" : "#f2f2f2";
 }
 
 // =========================
-// LINK DETECTOR (TO MAKE LINKS CLICKABLE)
+// LINK DETECTOR
 // =========================
-function detectLinks(text){
-    return text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>')
-               .replace(/(www\.[^\s]+)/g, '<a href="https://$1" target="_blank">$1</a>');
+function linkify(text){
+return text.replace(
+/(https?:\/\/[^\s]+|www\.[^\s]+|[\w-]+\.(com|ng|org|io|net))/g,
+match=>`<a href="https://${match.replace("https://","")}" target="_blank">${match}</a>`
+);
 }
 
 // =========================
-// STORAGE BUCKET (IMAGE, VIDEO, AUDIO, FAVICON)
+// LOAD POSTS
 // =========================
-const MEDIA_BUCKETS = Array.from({length: 200}, (_, i) => `media${i+1}`);
-const FAVICON_BUCKET = "favicon";
+async function loadPosts(){
 
-// File upload to Supabase
-async function uploadFile(file) {
-    if (!file) return "";
-    for (let bucket of MEDIA_BUCKETS) {
-        try {
-            let name = Date.now() + "_" + file.name;
-            const { error } = await db.storage.from(bucket).upload(name, file);
-            if (!error) {
-                return SUPABASE_URL + "/storage/v1/object/public/" + bucket + "/" + name;
-            }
-        } catch (e) {
-            continue;
-        }
-    }
-    return "";
+let {data} = await db.from("posts").select("*").order("id",{ascending:false});
+
+let box=document.getElementById("posts");
+box.innerHTML="";
+
+data.forEach(p=>{
+
+let media="";
+if(p.media){
+if(p.media.match(/\.(jpg|png|jpeg|gif)$/)) media=`<img src="${p.media}">`;
+else if(p.media.match(/\.(mp4|webm)$/)) media=`<video controls src="${p.media}"></video>`;
+else if(p.media.match(/\.(mp3|wav)$/)) media=`<audio controls src="${p.media}"></audio>`;
+}
+
+box.innerHTML+=`
+<div class="post">
+<h3>${p.title}</h3>
+<p>${linkify(p.body)}</p>
+${media}
+
+<div>ID: ${p.id}</div>
+
+<button onclick="likePost(${p.id})">👍 Like</button>
+<button onclick="openComments(${p.id})">💬 Comments</button>
+<button onclick="sharePost('${p.title}','${p.body}')">📤 Share</button>
+</div>
+`;
+});
 }
 
 // =========================
-// POST RENDERING (MEDIA + COMMENTS + LIKES)
+// LIKE SYSTEM (1 PER BROWSER)
 // =========================
-async function loadPosts() {
-    const { data } = await db.from("posts").select("*").order("id", { ascending: false });
+async function likePost(id){
 
-    let container = document.getElementById("posts");
-    container.innerHTML = "";
+if(getCookie("liked_"+id)) return alert("Already liked");
 
-    (data || []).forEach(p => {
-        let postDiv = document.createElement("div");
-        postDiv.className = "post";
+await db.rpc("increment_like",{post_id:id});
 
-        postDiv.innerHTML = `
-            <h3>${p.title}</h3>
-            <p>${detectLinks(p.body)}</p>
-            ${renderMedia(p.media)}
-            <div>Post ID: ${p.id}</div>
-            <div>❤️ ${p.likes || 0} <button onclick="likePost(${p.id})">Like</button></div>
-            <div><button onclick="openComments(${p.id})">Comments</button></div>
-            <button onclick="sharePost('${p.title}', '${p.body}')">Share</button>
-        `;
+setCookie("liked_"+id,true,365);
 
-        container.appendChild(postDiv);
-    });
+loadPosts();
 }
 
 // =========================
-// LIKE POST (1 PER USER)
+// COMMENTS
 // =========================
-async function likePost(postId) {
-    let hasLiked = localStorage.getItem(`liked_${postId}`);
-    if (hasLiked) return alert("You've already liked this post.");
+function openComments(id){
+openOverlay("commentOverlay");
+document.getElementById("commentPostId").value=id;
+loadComments(id);
+}
 
-    const { data } = await db.from("posts").select("likes").eq("id", postId).single();
+async function addComment(){
+let id=document.getElementById("commentPostId").value;
+let name=document.getElementById("cName").value;
+let text=document.getElementById("cText").value;
 
-    await db.from("posts").update({ likes: (data.likes || 0) + 1 }).eq("id", postId);
+if(!name||!text) return alert("Fill all");
 
-    localStorage.setItem(`liked_${postId}`, "true");
-    loadPosts();
+await db.from("comments").insert({
+post_id:id,
+name,
+text
+});
+
+loadComments(id);
+}
+
+async function loadComments(id){
+
+let {data}=await db.from("comments").select("*").eq("post_id",id);
+
+let box=document.getElementById("commentList");
+box.innerHTML="";
+
+data.forEach(c=>{
+box.innerHTML+=`
+<div oncontextmenu="deleteComment(${c.id})">
+<b>${c.name}</b>: ${c.text}
+</div>
+`;
+});
+}
+
+async function deleteComment(id){
+if(!confirm("Delete comment?")) return;
+await db.from("comments").delete().eq("id",id);
 }
 
 // =========================
-// COMMENT SYSTEM (STORED IN DB)
+// SHARE WITH ADS DELAY
 // =========================
-async function openComments(postId) {
-    let name = prompt("Your name:");
-    let comment = prompt("Your comment:");
-    
-    if (!name || !comment) return;
+function sharePost(title,body){
 
-    await db.from("comments").insert({
-        post_id: postId,
-        name,
-        text: comment
-    });
+openAd();
 
-    alert("Comment added successfully!");
-    loadPosts();
+setTimeout(()=>{
+if(navigator.share){
+navigator.share({title,text:body});
+}
+},5000);
 }
 
 // =========================
-// SHARE POST (WITH ADS)
+// ADS
 // =========================
-function sharePost(title, body) {
-    watchAds();
-    setTimeout(() => {
-        if (navigator.share) {
-            navigator.share({
-                title: title,
-                text: body,
-                url: location.href
-            });
-        }
-    }, 2000);
+function openAd(){
+document.getElementById("adOverlay").style.display="flex";
+loadAd();
+setTimeout(()=>closeAd(),8000);
+}
+
+function closeAd(){
+document.getElementById("adOverlay").style.display="none";
+document.getElementById("adContainer").innerHTML="";
 }
 
 // =========================
-// ADMIN LOGIN (WITH 5 TRIALS)
+// ADMIN LOGIN (LOADER FIX)
 // =========================
-async function adminLogin() {
-    let email = document.getElementById("adminEmail").value;
-    let pass = document.getElementById("adminPass").value;
+async function adminLogin(){
 
-    let trials = JSON.parse(localStorage.getItem("login_trials") || "0");
+let email=document.getElementById("adminEmail").value;
+let pass=document.getElementById("adminPass").value;
 
-    if (trials >= 5) {
-        alert("🔒 You are locked out. Try again in 24 hours.");
-        return;
-    }
+document.getElementById("loginStatus").innerText="⏳ Please wait...";
 
-    const { error } = await db.auth.signInWithPassword({ email, password: pass });
+let {error}=await db.auth.signInWithPassword({
+email,
+password:pass
+});
 
-    if (error) {
-        trials++;
-        localStorage.setItem("login_trials", JSON.stringify(trials));
-        alert(`❌ Incorrect credentials. Attempts: ${trials}/5`);
-        return;
-    }
+if(error){
+document.getElementById("loginStatus").innerText="❌ Invalid login";
+return;
+}
 
-    admin = true;
-    localStorage.removeItem("login_trials");
-    alert("✅ Admin login successful!");
-    closeOverlay("adminLogin");
-    openOverlay("adminPanel");
+admin=true;
+document.getElementById("loginStatus").innerText="✅ Success";
+closeOverlay("adminLogin");
+openOverlay("adminPanel");
 }
 
 // =========================
-// CREATE POST (ADMIN ONLY)
+// INIT
 // =========================
-async function createPost() {
-    let title = document.getElementById("postTitle").value;
-    let body = document.getElementById("postBody").value;
-    body = detectLinks(body);  // Detect links in the body
-
-    let file = document.getElementById("mediaFile").files[0];
-    let media = await uploadFile(file);
-
-    await db.from("posts").insert({ title, body, media, likes: 0 });
-    loadPosts();
-    alert("✅ Post created successfully!");
-}
-
-// =========================
-// FAVICON UPDATE (ADMIN ONLY)
-// =========================
-async function changeFavicon() {
-    let input = document.createElement("input");
-    input.type = "file";
-    input.accept = "image/png";
-
-    input.onchange = async () => {
-        let file = input.files[0];
-
-        let img = new Image();
-        img.onload = async () => {
-            if (img.width !== 128 || img.height !== 128) {
-                alert("❌ Favicon must be 128x128!");
-                return;
-            }
-
-            await db.storage.from("favicon").upload("favicon.png", file, { upsert: true });
-            alert("✅ Favicon updated!");
-        };
-        img.src = URL.createObjectURL(file);
-    };
-
-    input.click();
-}
-
-// =========================
-// INIT PAGE (LOAD POSTS ON START)
-// =========================
-window.onload = () => {
-    loadPosts();
+window.onload=()=>{
+loadPosts();
 };
