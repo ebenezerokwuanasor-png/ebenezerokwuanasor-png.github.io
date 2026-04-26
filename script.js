@@ -1,27 +1,27 @@
 // =========================
-// SUPABASE
+// SUPABASE AUTH & URL CONFIG
 // =========================
 const SUPABASE_URL = "https://fjiwrdecjftkflchjptr.supabase.co";
-const SUPABASE_ANON = "
-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqaXdyZGVjamZ0a2ZsY2hqcHRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5Nzk0OTQsImV4cCI6MjA4ODU1NTQ5NH0.tXe06ol03x8M0FLfk55_Wj6A2Y3mNny5t028gqZzYoU";
+const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqaXdyZGVjamZ0a2ZsY2hqcHRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5Nzk0OTQsImV4cCI6MjA4ODU1NTQ5NH0.tXe06ol03x8M0FLfk55_Wj6A2Y3mNny5t028gqZzYoU";  // Replace with your actual anon key
 
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
 // =========================
-// STATE
+// GLOBAL STATE
 // =========================
 let admin = false;
 let darkMode = false;
+let currentUser = null;
 
 // =========================
-// SIDEBAR FIX
+// SIDEBAR FUNCTIONALITY
 // =========================
 function toggleSidebar(){
     document.getElementById("sidebar").classList.toggle("open");
 }
 
 // =========================
-// OVERLAYS
+// OVERLAY HANDLERS (ADMIN, MODAL, ETC)
 // =========================
 function openOverlay(id){
     document.getElementById(id).style.display = "flex";
@@ -32,291 +32,192 @@ function closeOverlay(id){
 }
 
 // =========================
-// SAFE BUTTON MAPPING (FIXES YOUR BUG)
-// =========================
-function adminClick(){
-    openOverlay("adminLogin");
-}
-
-function watchAds(){
-    openOverlay("adOverlay");
-
-    let adBox = document.getElementById("adContainer");
-    adBox.innerHTML = "";
-
-    let script = document.createElement("script");
-    script.src = "https://pl29052599.profitablecpmratenetwork.com/24/cb/b7/24cbb72257475dcd544b0346aee1dd35.js";
-    script.async = true;
-
-    adBox.appendChild(script);
-
-    setTimeout(closeAds, 8000);
-}
-
-function closeAds(){
-    closeOverlay("adOverlay");
-}
-
-// =========================
-// THEME (SOFT DIM)
+// THEME TOGGLE (SOFT DIM MODE)
 // =========================
 function toggleTheme(){
     darkMode = !darkMode;
-
     document.body.style.background = darkMode ? "#1a1a1a" : "#f2f2f2";
     document.body.style.color = darkMode ? "#f5f5f5" : "#111";
-
-    document.querySelectorAll(".post").forEach(p=>{
-        p.style.background = darkMode ? "#2a2a2a" : "white";
+    document.querySelectorAll(".post").forEach(post => {
+        post.style.background = darkMode ? "#2a2a2a" : "#fff";
     });
 }
 
 // =========================
-// LINK DETECTOR (FIXED)
+// LINK DETECTOR (TO MAKE LINKS CLICKABLE)
 // =========================
 function detectLinks(text){
-    return text
-    .replace(/(https?:\/\/[^\s]+)/g,'<a href="$1" target="_blank">$1</a>')
-    .replace(/(www\.[^\s]+)/g,'<a href="https://$1" target="_blank">$1</a>')
-    .replace(/(\b[a-z0-9.-]+\.(com|org|net|ng|io)\b)/g,
-        '<a href="https://$1" target="_blank">$1</a>'
-    );
+    return text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>')
+               .replace(/(www\.[^\s]+)/g, '<a href="https://$1" target="_blank">$1</a>');
 }
 
 // =========================
-// STORAGE (200 BUCKET FIX)
+// STORAGE BUCKET (IMAGE, VIDEO, AUDIO, FAVICON)
 // =========================
-const MEDIA_BUCKETS = Array.from({length:200},(_,i)=>`media${i+1}`);
+const MEDIA_BUCKETS = Array.from({length: 200}, (_, i) => `media${i+1}`);
+const FAVICON_BUCKET = "favicon";
 
-async function uploadFile(file){
-    if(!file) return "";
-
-    for(let bucket of MEDIA_BUCKETS){
-        try{
-            let name = Date.now()+"_"+file.name;
-
-            const { error } = await db.storage.from(bucket).upload(name,file);
-
-            if(!error){
-                return SUPABASE_URL+
-                "/storage/v1/object/public/"+bucket+"/"+name;
+// File upload to Supabase
+async function uploadFile(file) {
+    if (!file) return "";
+    for (let bucket of MEDIA_BUCKETS) {
+        try {
+            let name = Date.now() + "_" + file.name;
+            const { error } = await db.storage.from(bucket).upload(name, file);
+            if (!error) {
+                return SUPABASE_URL + "/storage/v1/object/public/" + bucket + "/" + name;
             }
-        }catch(e){}
+        } catch (e) {
+            continue;
+        }
     }
-
     return "";
 }
 
 // =========================
-// RENDER MEDIA FIX
+// POST RENDERING (MEDIA + COMMENTS + LIKES)
 // =========================
-function renderMedia(url){
-    if(!url) return "";
+async function loadPosts() {
+    const { data } = await db.from("posts").select("*").order("id", { ascending: false });
 
-    if(url.match(/\.(jpg|jpeg|png|gif)$/i))
-        return `<img src="${url}">`;
+    let container = document.getElementById("posts");
+    container.innerHTML = "";
 
-    if(url.match(/\.(mp4|webm)$/i))
-        return `<video controls src="${url}"></video>`;
+    (data || []).forEach(p => {
+        let postDiv = document.createElement("div");
+        postDiv.className = "post";
 
-    if(url.match(/\.(mp3|wav)$/i))
-        return `<audio controls src="${url}"></audio>`;
-
-    return "";
-}
-
-// =========================
-// POSTS
-// =========================
-async function loadPosts(){
-    let { data } = await db.from("posts")
-    .select("*")
-    .order("id",{ascending:false});
-
-    let box = document.getElementById("posts");
-    box.innerHTML = "";
-
-    (data || []).forEach(p=>{
-        let div = document.createElement("div");
-        div.className = "post";
-
-        div.innerHTML = `
+        postDiv.innerHTML = `
             <h3>${p.title}</h3>
             <p>${detectLinks(p.body)}</p>
-
             ${renderMedia(p.media)}
-
             <div>Post ID: ${p.id}</div>
-
-            ❤️ ${p.likes || 0}
-
-            <br>
-
-            <button onclick="likePost(${p.id})">Like</button>
-            <button onclick="openComments(${p.id})">Comments</button>
-            <button onclick="sharePost('${p.title}','${p.body}')">Share</button>
+            <div>❤️ ${p.likes || 0} <button onclick="likePost(${p.id})">Like</button></div>
+            <div><button onclick="openComments(${p.id})">Comments</button></div>
+            <button onclick="sharePost('${p.title}', '${p.body}')">Share</button>
         `;
 
-        box.appendChild(div);
+        container.appendChild(postDiv);
     });
 }
 
 // =========================
-// LIKE (FIXED)
+// LIKE POST (1 PER USER)
 // =========================
-async function likePost(id){
+async function likePost(postId) {
+    let hasLiked = localStorage.getItem(`liked_${postId}`);
+    if (hasLiked) return alert("You've already liked this post.");
 
-    let key = "liked_"+id;
-    if(localStorage.getItem(key)) return;
+    const { data } = await db.from("posts").select("likes").eq("id", postId).single();
 
-    let { data } = await db.from("posts")
-    .select("likes").eq("id",id).single();
+    await db.from("posts").update({ likes: (data.likes || 0) + 1 }).eq("id", postId);
 
-    await db.from("posts")
-    .update({ likes:(data.likes||0)+1 })
-    .eq("id",id);
-
-    localStorage.setItem(key,"1");
+    localStorage.setItem(`liked_${postId}`, "true");
     loadPosts();
 }
 
 // =========================
-// COMMENTS
+// COMMENT SYSTEM (STORED IN DB)
 // =========================
-async function openComments(postId){
-
+async function openComments(postId) {
     let name = prompt("Your name:");
-    if(!name) return;
-
-    let text = prompt("Comment:");
-    if(!text) return;
+    let comment = prompt("Your comment:");
+    
+    if (!name || !comment) return;
 
     await db.from("comments").insert({
         post_id: postId,
         name,
-        text
+        text: comment
     });
 
-    alert("Comment added");
+    alert("Comment added successfully!");
+    loadPosts();
 }
 
 // =========================
-// SHARE WITH ADS + TIMER
+// SHARE POST (WITH ADS)
 // =========================
-function sharePost(title,body){
-
+function sharePost(title, body) {
     watchAds();
-
-    let start = Date.now();
-
-    let interval = setInterval(()=>{
-
-        let diff = Date.now() - start;
-
-        if(diff > 200000){
-            clearInterval(interval);
-
-            if(navigator.share){
-                navigator.share({
-                    title,
-                    text: body,
-                    url: location.href
-                });
-            }
+    setTimeout(() => {
+        if (navigator.share) {
+            navigator.share({
+                title: title,
+                text: body,
+                url: location.href
+            });
         }
-
-    },2000);
+    }, 2000);
 }
 
 // =========================
-// ADMIN LOGIN TRIAL SYSTEM (5 FAIL LIMIT)
+// ADMIN LOGIN (WITH 5 TRIALS)
 // =========================
-async function adminLogin(){
-
+async function adminLogin() {
     let email = document.getElementById("adminEmail").value;
     let pass = document.getElementById("adminPass").value;
 
-    let key = "login_trials";
+    let trials = JSON.parse(localStorage.getItem("login_trials") || "0");
 
-    let trials = JSON.parse(localStorage.getItem(key) || "0");
-
-    if(trials >= 5){
-        alert("🔒 Locked for 24hrs");
+    if (trials >= 5) {
+        alert("🔒 You are locked out. Try again in 24 hours.");
         return;
     }
 
-    const { error } = await db.auth.signInWithPassword({
-        email,
-        password: pass
-    });
+    const { error } = await db.auth.signInWithPassword({ email, password: pass });
 
-    if(error){
+    if (error) {
         trials++;
-        localStorage.setItem(key, JSON.stringify(trials));
-
-        alert("❌ Wrong login ("+trials+"/5)");
+        localStorage.setItem("login_trials", JSON.stringify(trials));
+        alert(`❌ Incorrect credentials. Attempts: ${trials}/5`);
         return;
     }
 
     admin = true;
-    localStorage.removeItem(key);
-
+    localStorage.removeItem("login_trials");
+    alert("✅ Admin login successful!");
     closeOverlay("adminLogin");
     openOverlay("adminPanel");
-
-    alert("✅ Welcome Admin");
 }
 
 // =========================
-// ADMIN POSTS
+// CREATE POST (ADMIN ONLY)
 // =========================
-async function createPost(){
-
+async function createPost() {
     let title = document.getElementById("postTitle").value;
-    let body = detectLinks(document.getElementById("postBody").value);
+    let body = document.getElementById("postBody").value;
+    body = detectLinks(body);  // Detect links in the body
 
     let file = document.getElementById("mediaFile").files[0];
-
     let media = await uploadFile(file);
 
-    await db.from("posts").insert({
-        title,
-        body,
-        media,
-        likes:0
-    });
-
+    await db.from("posts").insert({ title, body, media, likes: 0 });
     loadPosts();
-    alert("Posted");
+    alert("✅ Post created successfully!");
 }
 
 // =========================
-// FAVICON (SAFE)
+// FAVICON UPDATE (ADMIN ONLY)
 // =========================
-async function changeFavicon(){
-
+async function changeFavicon() {
     let input = document.createElement("input");
     input.type = "file";
+    input.accept = "image/png";
 
-    input.onchange = async ()=>{
-
+    input.onchange = async () => {
         let file = input.files[0];
 
         let img = new Image();
-
-        img.onload = async ()=>{
-
-            if(img.width!==128 || img.height!==128){
-                alert("Must be 128x128");
+        img.onload = async () => {
+            if (img.width !== 128 || img.height !== 128) {
+                alert("❌ Favicon must be 128x128!");
                 return;
             }
 
-            await db.storage.from("favicon")
-            .upload("favicon.png",file,{upsert:true});
-
-            alert("Updated");
+            await db.storage.from("favicon").upload("favicon.png", file, { upsert: true });
+            alert("✅ Favicon updated!");
         };
-
         img.src = URL.createObjectURL(file);
     };
 
@@ -324,8 +225,8 @@ async function changeFavicon(){
 }
 
 // =========================
-// INIT
+// INIT PAGE (LOAD POSTS ON START)
 // =========================
-window.onload = ()=>{
+window.onload = () => {
     loadPosts();
 };
