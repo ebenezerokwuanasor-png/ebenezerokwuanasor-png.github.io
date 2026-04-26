@@ -1,73 +1,106 @@
-// ==============================
-// SUPABASE INIT (UNCHANGED)
-// ==============================
+// ==========================
+// SUPABASE INIT
+// ==========================
 const SUPABASE_URL = "https://fjiwrdecjftkflchjptr.supabase.co";
-const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqaXdyZGVjamZ0a2ZsY2hqcHRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5Nzk0OTQsImV4cCI6MjA4ODU1NTQ5NH0.tXe06ol03x8MFLfk55_Wj6A2Y3mNny5t028gqZzYoU";
+const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqaXdyZGVjamZ0a2ZsY2hqcHRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5Nzk0OTQsImV4cCI6MjA4ODU1NTQ5NH0.tXe06ol03x8M0FLfk55_Wj6A2Y3mNny5t028gqZzYoU";
 
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
 let admin = false;
 
-// ==============================
-// LOADER (SPINNER)
-// ==============================
-function showLoader(msg = "Please wait...") {
-    let l = document.createElement("div");
-    l.id = "loader";
-    l.innerHTML = `<div class="spinner"></div><p>${msg}</p>`;
-    document.body.appendChild(l);
+// ==========================
+// SAFE INIT GUARD (PREVENT UI BREAK)
+// ==========================
+window.onerror = function(e){
+    console.log("JS Error caught:", e);
+};
+
+// ==========================
+// SIDEBAR FIX (MAIN ISSUE FIXED)
+// ==========================
+function toggleSidebar() {
+    const sidebar = document.getElementById("sidebar");
+
+    if (!sidebar) {
+        console.log("Sidebar not found");
+        return;
+    }
+
+    sidebar.classList.toggle("open");
 }
 
-function hideLoader() {
-    let l = document.getElementById("loader");
-    if (l) l.remove();
+// close sidebar when clicking outside (optional but stable)
+document.addEventListener("click", function(e){
+    const sidebar = document.getElementById("sidebar");
+    const menu = document.querySelector(".menu");
+
+    if (!sidebar || !menu) return;
+
+    if (
+        sidebar.classList.contains("open") &&
+        !sidebar.contains(e.target) &&
+        !menu.contains(e.target)
+    ) {
+        sidebar.classList.remove("open");
+    }
+});
+
+// ==========================
+// OVERLAYS (SAFE)
+// ==========================
+function openOverlay(id){
+    let el = document.getElementById(id);
+    if(el) el.style.display = "flex";
 }
 
-// ==============================
-// SAFE ADS (REAL IMPRESSION)
-// ==============================
-function watchAds() {
-    let overlay = document.getElementById("adOverlay");
-    overlay.style.display = "flex";
-
-    let container = document.getElementById("adContainer");
-    container.innerHTML = "";
-
-    let script = document.createElement("script");
-    script.src = "https://pl29052599.profitablecpmratenetwork.com/24/cb/b7/24cbb72257475dcd544b0346aee1dd35.js";
-    script.async = true;
-
-    container.appendChild(script);
-
-    setTimeout(() => {
-        closeAds();
-    }, 8000);
+function closeOverlay(id){
+    let el = document.getElementById(id);
+    if(el) el.style.display = "none";
 }
 
-function closeAds() {
-    document.getElementById("adOverlay").style.display = "none";
-    document.getElementById("adContainer").innerHTML = "";
+// ==========================
+// SIDEBAR BUTTON FUNCTIONS (ALL FIXED)
+// ==========================
+function openContact(){ openOverlay("contactOverlay"); }
+function openAbout(){ openOverlay("aboutOverlay"); }
+function openPrivacy(){ openOverlay("privacyOverlay"); }
+function openTerms(){ openOverlay("termsOverlay"); }
+
+// ==========================
+// THEME
+// ==========================
+let dark = false;
+function toggleTheme(){
+    dark = !dark;
+    document.body.style.background = dark ? "#111" : "#f2f2f2";
+    document.body.style.color = dark ? "#fff" : "#000";
 }
 
-// ==============================
-// COOKIES (for likes control)
-// ==============================
-function setCookie(name, value) {
-    document.cookie = name + "=" + value + "; path=/";
+// ==========================
+// LOADER (LOGIN / UPLOAD FEEDBACK)
+// ==========================
+function showLoader(text="Loading..."){
+    let d = document.createElement("div");
+    d.id = "loader";
+    d.innerHTML = `
+        <div class="spinner"></div>
+        <p>${text}</p>
+    `;
+    document.body.appendChild(d);
 }
 
-function getCookie(name) {
-    let v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
-    return v ? v[2] : null;
+function hideLoader(){
+    let d = document.getElementById("loader");
+    if(d) d.remove();
 }
 
-// ==============================
-// ADMIN LOGIN
-// ==============================
-async function adminLogin() {
-    showLoader("Logging in...");
+// ==========================
+// ADMIN LOGIN (SAFE)
+// ==========================
+async function adminLogin(){
+    showLoader("Please wait...");
 
-    try {
+    try{
         let email = document.getElementById("adminEmail").value;
         let pass = document.getElementById("adminPass").value;
 
@@ -76,196 +109,96 @@ async function adminLogin() {
             password: pass
         });
 
-        if (error) throw error;
+        if(error) throw error;
 
         admin = true;
-        alert("✅ Login successful");
+        closeOverlay("adminLogin");
+        openOverlay("adminPanel");
 
-    } catch (e) {
-        alert("❌ " + e.message);
+        alert("Login successful");
+    }catch(err){
+        alert("Login failed: " + err.message);
     }
 
     hideLoader();
 }
 
-// ==============================
-// CREATE POST
-// ==============================
-async function createPost() {
-    showLoader("Publishing...");
-
-    const { data: user } = await db.auth.getUser();
-
-    if (!user || !user.user) {
-        hideLoader();
-        return alert("❌ Not authorized");
-    }
-
-    let title = document.getElementById("postTitle").value;
-    let body = detectLinks(document.getElementById("postBody").value);
-
-    await db.from("posts").insert({
-        title,
-        body,
-        likes: 0,
-        user_id: user.user.id
-    });
-
-    hideLoader();
-    loadPosts();
+// ==========================
+// ADMIN LOGOUT
+// ==========================
+async function adminLogout(){
+    await db.auth.signOut();
+    admin = false;
+    closeOverlay("adminPanel");
+    alert("Logged out");
 }
 
-// ==============================
-// DELETE POST
-// ==============================
-async function deletePost() {
-    let id = prompt("Post ID");
-
-    showLoader("Deleting...");
-
-    await db.from("posts").delete().eq("id", id);
-
-    hideLoader();
-    loadPosts();
-}
-
-// ==============================
-// LIKE SYSTEM
-// ==============================
-async function likePost(id) {
-
-    if (getCookie("liked_" + id)) {
-        alert("Already liked");
-        return;
-    }
-
-    let { data } = await db.from("posts").select("likes").eq("id", id).single();
-
-    let newLikes = (data.likes || 0) + 1;
-
-    await db.from("posts").update({ likes: newLikes }).eq("id", id);
-
-    setCookie("liked_" + id, "1");
-
-    loadPosts();
-}
-
-// ==============================
-// COMMENTS SYSTEM
-// ==============================
-async function addComment(postId) {
-
-    let name = prompt("Your name");
-    let text = prompt("Your comment");
-
-    if (!name || !text) return;
-
-    await db.from("comments").insert({
-        post_id: postId,
-        name,
-        text
-    });
-
-    loadComments(postId);
-}
-
-async function loadComments(postId) {
-
-    let { data } = await db.from("comments")
-        .select("*")
-        .eq("post_id", postId);
-
-    let box = document.getElementById("comments_" + postId);
-
-    box.innerHTML = "";
-
-    data.forEach(c => {
-        box.innerHTML += `
-        <div class="comment">
-            <b>${c.name}</b>: ${c.text}
-            <span onclick="deleteComment(${c.id})">🗑️</span>
-        </div>`;
-    });
-}
-
-async function deleteComment(id) {
-
-    let confirmDelete = confirm("Delete comment?");
-    if (!confirmDelete) return;
-
-    await db.from("comments").delete().eq("id", id);
-
-    loadPosts();
-}
-
-// ==============================
-// SHARE (WITH ADS)
-// ==============================
-function shareWithAd(title, body) {
-
-    watchAds();
-
-    setTimeout(() => {
-        if (navigator.share) {
-            navigator.share({
-                title,
-                text: body,
-                url: window.location.href
-            });
-        }
-    }, 4000);
-}
-
-// ==============================
-// LINK DETECTOR
-// ==============================
-function detectLinks(text) {
-    return text.replace(
-        /(https?:\/\/[^\s]+)/g,
-        '<a href="$1" target="_blank">$1</a>'
-    );
-}
-
-// ==============================
-// LOAD POSTS (FULL SYSTEM)
-// ==============================
-async function loadPosts() {
-
-    let { data } = await db.from("posts").select("*").order("id", { ascending: false });
+// ==========================
+// POSTS LOAD (SAFE)
+// ==========================
+async function loadPosts(){
+    let { data } = await db.from("posts").select("*").order("id",{ascending:false});
 
     let container = document.getElementById("posts");
+    if(!container) return;
+
     container.innerHTML = "";
 
-    data.forEach(p => {
-
+    (data || []).forEach(p=>{
         let div = document.createElement("div");
         div.className = "post";
 
         div.innerHTML = `
-        <h3>${p.title}</h3>
-        <p>${p.body}</p>
+            <h3>${p.title || ""}</h3>
+            <p>${p.body || ""}</p>
 
-        <div>
-            ❤️ ${p.likes || 0}
+            <div style="margin-top:10px;">
+                ❤️ ${p.likes || 0}
+            </div>
+
             <button onclick="likePost(${p.id})">Like</button>
-
-            💬 <button onclick="addComment(${p.id})">Comment</button>
-
-            🔗 <button onclick="shareWithAd('${p.title}','${p.body}')">Share</button>
-        </div>
-
-        <div id="comments_${p.id}"></div>
+            <button onclick="sharePost('${p.title}','${p.body}')">Share</button>
         `;
 
         container.appendChild(div);
-
-        loadComments(p.id);
     });
 }
 
-// ==============================
-// INIT
-// ==============================
-window.onload = () => {
+// ==========================
+// LIKE SYSTEM
+// ==========================
+async function likePost(id){
+    let { data } = await db.from("posts").select("likes").eq("id",id).single();
+
+    await db.from("posts")
+        .update({ likes: (data.likes || 0) + 1 })
+        .eq("id",id);
+
     loadPosts();
+}
+
+// ==========================
+// SHARE
+// ==========================
+function sharePost(title,body){
+    if(navigator.share){
+        navigator.share({
+            title,
+            text: body,
+            url: location.href
+        });
+    }else{
+        alert("Sharing not supported");
+    }
+}
+
+// ==========================
+// INIT (IMPORTANT FIX)
+// ==========================
+window.onload = function(){
+    loadPosts();
+
+    // safety check for sidebar
+    let sb = document.getElementById("sidebar");
+    if(sb) sb.classList.remove("open");
 };
