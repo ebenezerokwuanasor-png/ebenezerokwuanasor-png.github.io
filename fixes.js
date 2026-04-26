@@ -1,38 +1,21 @@
 // =======================
-// FIXES.JS (PATCH FILE)
+// GLOBAL SAFE INIT
 // =======================
-
-// ---------- CHECK SUPABASE LOADED ----------
-window.addEventListener("load", () => {
-  if (!window.supabase) {
-    alert("❌ Supabase not loaded. Check your CDN link.");
-  }
+window.addEventListener("DOMContentLoaded", () => {
+  bindButtons();
+  fixCloseButtons();
+  fixPasswordToggle();
 });
 
-// ---------- CLOSE BUTTON FIX ----------
-document.addEventListener("click", function(e){
-  if(e.target.classList.contains("closeBtn")){
-    let overlay = e.target.closest(".overlay");
-    if(overlay) overlay.style.display = "none";
-  }
-});
+// =======================
+// 🔥 FIX ALL SIDEBAR BUTTONS
+// =======================
+function bindButtons(){
 
-// ---------- PASSWORD TOGGLE FIX ----------
-document.addEventListener("click", function(e){
-  if(e.target.innerText === "👁️"){
-    let input = e.target.parentElement.querySelector("input");
-    if(input){
-      input.type = input.type === "password" ? "text" : "password";
-    }
-  }
-});
-
-// ---------- ADMIN BUTTON FIX ----------
-document.addEventListener("DOMContentLoaded", () => {
+  // Admin
   let adminBtn = document.querySelector("button[onclick='adminClick()']");
-  
   if(adminBtn){
-    adminBtn.onclick = function(){
+    adminBtn.onclick = () => {
       if(window.admin){
         document.getElementById("adminPanel").style.display = "flex";
       }else{
@@ -40,53 +23,178 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     };
   }
-});
 
-// ---------- LOGIN TRIAL SYSTEM ----------
-const MAX_TRIALS = 5;
-const LOCK_TIME = 24 * 60 * 60 * 1000;
+  // Contact
+  let contactBtn = document.querySelector("button[onclick='openContact()']");
+  if(contactBtn){
+    contactBtn.onclick = () => {
+      document.getElementById("contactOverlay").style.display = "flex";
+    };
+  }
 
-function getTrials(){
-  return JSON.parse(localStorage.getItem("login_trials")) || {count:0,time:0};
+  // About
+  let aboutBtn = document.querySelector("button[onclick='openAbout()']");
+  if(aboutBtn){
+    aboutBtn.onclick = () => {
+      document.getElementById("aboutOverlay").style.display = "flex";
+    };
+  }
+
+  // Privacy
+  let privacyBtn = document.querySelector("button[onclick='openPrivacy()']");
+  if(privacyBtn){
+    privacyBtn.onclick = () => {
+      document.getElementById("privacyOverlay").style.display = "flex";
+    };
+  }
+
+  // Terms
+  let termsBtn = document.querySelector("button[onclick='openTerms()']");
+  if(termsBtn){
+    termsBtn.onclick = () => {
+      document.getElementById("termsOverlay").style.display = "flex";
+    };
+  }
+
+  // Watch Ads
+  let adsBtn = document.querySelector("button[onclick='watchAds()']");
+  if(adsBtn){
+    adsBtn.onclick = () => watchAds();
+  }
+
+  // Search button fix
+  let searchBtn = document.querySelector(".search-bar button");
+  if(searchBtn){
+    searchBtn.onclick = () => searchPosts();
+  }
 }
 
-function saveTrials(data){
-  localStorage.setItem("login_trials", JSON.stringify(data));
+// =======================
+// 🔥 CLOSE BUTTON FIX
+// =======================
+function fixCloseButtons(){
+  document.querySelectorAll(".closeBtn").forEach(btn => {
+    btn.onclick = () => {
+      let overlay = btn.closest(".overlay");
+      if(overlay) overlay.style.display = "none";
+    };
+  });
 }
 
-function isLocked(){
-  let t = getTrials();
-  if(t.count >= MAX_TRIALS){
+// =======================
+// 🔥 PASSWORD TOGGLE FIX
+// =======================
+function fixPasswordToggle(){
+  let pass = document.getElementById("adminPass");
+  if(!pass) return;
+
+  let btn = pass.parentElement.querySelector("button");
+
+  if(btn){
+    btn.onclick = () => {
+      pass.type = pass.type === "password" ? "text" : "password";
+    };
+  }
+}
+
+// =======================
+// 🔥 REAL ADSTERA FIX (PLAYS)
+// =======================
+function watchAds(){
+
+  let overlay = document.getElementById("adOverlay");
+  let box = document.getElementById("adContainer");
+
+  if(!overlay || !box){
+    alert("Ad container missing");
+    return;
+  }
+
+  overlay.style.display = "flex";
+  box.innerHTML = "";
+
+  // inject your real ad
+  let script = document.createElement("script");
+  script.src = "https://pl29052599.profitablecpmratenetwork.com/24/cb/b7/24cbb72257475dcd544b0346aee1dd35.js";
+  script.async = true;
+
+  box.appendChild(script);
+
+  // auto close
+  setTimeout(() => {
+    overlay.style.display = "none";
+    box.innerHTML = "";
+  }, 8000);
+}
+
+// =======================
+// 🔥 TRIAL SYSTEM (FIXED)
+// =======================
+const MAX = 5;
+const LOCK = 24 * 60 * 60 * 1000;
+
+function trials(){
+  return JSON.parse(localStorage.getItem("trial")) || {count:0,time:0};
+}
+
+function save(t){
+  localStorage.setItem("trial", JSON.stringify(t));
+}
+
+function locked(){
+  let t = trials();
+
+  if(t.count >= MAX){
     let diff = Date.now() - t.time;
-    if(diff < LOCK_TIME){
-      alert("⛔ Too many attempts. Try again in 24hrs.");
+
+    if(diff < LOCK){
+      alert("⛔ Locked for 24 hours");
       return true;
     }else{
-      saveTrials({count:0,time:0});
+      save({count:0,time:0});
     }
   }
+
   return false;
 }
 
-// ---------- PATCH ADMIN LOGIN ----------
-const oldLogin = window.adminLogin;
+// =======================
+// 🔥 LOGIN PATCH (REAL FIX)
+// =======================
+const originalLogin = window.adminLogin;
 
 window.adminLogin = async function(){
-  if(isLocked()) return;
+
+  if(locked()) return;
+
+  let email = document.getElementById("adminEmail").value;
+  let pass = document.getElementById("adminPass").value;
 
   try{
-    await oldLogin();
 
-    // success reset
-    saveTrials({count:0,time:0});
+    const { error } = await db.auth.signInWithPassword({
+      email,
+      password: pass
+    });
 
-  }catch(err){
+    if(error) throw error;
 
-    let t = getTrials();
+    window.admin = true;
+
+    document.getElementById("adminLogin").style.display = "none";
+    document.getElementById("adminPanel").style.display = "flex";
+
+    save({count:0,time:0});
+
+    alert("✅ Login successful");
+
+  }catch(e){
+
+    let t = trials();
     t.count++;
     t.time = Date.now();
-    saveTrials(t);
+    save(t);
 
-    alert("❌ Wrong login ("+t.count+"/"+MAX_TRIALS+")");
+    alert("❌ Wrong login ("+t.count+"/"+MAX+")");
   }
 };
