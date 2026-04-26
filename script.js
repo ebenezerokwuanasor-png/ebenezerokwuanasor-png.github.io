@@ -109,14 +109,31 @@ async function adminLogin() {
 // LOAD POSTS (FIXED RENDER PIPELINE)
 // =======================
 async function loadPosts() {
-  const { data } = await db.from("posts").select("*").order("id", { ascending: false });
+
+  const { data, error } = await db
+    .from("posts")
+    .select("*")
+    .order("id", { ascending: false });
+
+  if (error) {
+    console.log(error);
+    return;
+  }
 
   const container = document.getElementById("posts");
   container.innerHTML = "";
 
   for (let p of data) {
-    const likes = await db.from("likes").select("*", { count: "exact", head: true }).eq("post_id", p.id);
-    const comments = await db.from("comments").select("*", { count: "exact", head: true }).eq("post_id", p.id);
+
+    const { count: likeCount } = await db
+      .from("likes")
+      .select("*", { count: "exact", head: true })
+      .eq("post_id", p.id);
+
+    const { count: commentCount } = await db
+      .from("comments")
+      .select("*", { count: "exact", head: true })
+      .eq("post_id", p.id);
 
     const div = document.createElement("div");
     div.className = "post";
@@ -128,15 +145,16 @@ async function loadPosts() {
       ${renderMedia(p.media)}
 
       <div>
-        ❤️ ${likes.count || 0}
-        💬 ${comments.count || 0}
+        ❤️ ${likeCount || 0} |
+        💬 ${commentCount || 0}
       </div>
 
       <button onclick="likePost(${p.id})">Like</button>
       <button onclick="commentPost(${p.id})">Comment</button>
       <button onclick="sharePost(${p.id})">Share</button>
+      <button onclick="downloadMedia('${p.media}')">Download</button>
 
-      <div>ID: ${p.id}</div>
+      <div style="font-size:12px;color:gray">ID: ${p.id}</div>
     `;
 
     container.appendChild(div);
