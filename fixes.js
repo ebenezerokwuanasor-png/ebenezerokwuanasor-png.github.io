@@ -1,3 +1,6 @@
+window.showLoader = showLoader;
+window.hideLoader = hideLoader;
+
 // =======================
 // SAFE INIT
 // =======================
