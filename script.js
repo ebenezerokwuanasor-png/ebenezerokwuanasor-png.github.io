@@ -1,4 +1,4 @@
-window.toggleSidebar = toggleSidebar;
+functionwAdwAddow.toggleSidebar = toggleSidebar;
 window.adminClick = adminClick;
 window.openContact = openContact;
 window.toggleTheme = toggleTheme;
@@ -240,13 +240,17 @@ async function openComments(postId) {
 
 // =====================
 // SHARE (WITH AD GATE)
-// =====================
+// ====================
+ 
 function sharePost(postId) {
-  showAd(() => {
-    const url = window.location.href + "?post=" + postId;
+  watchAds(() => {
+    const url = window.location.origin + "?post=" + postId;
 
     if (navigator.share) {
-      navigator.share({ title: "Post", url });
+      navigator.share({
+        title: "Post",
+        url: url
+      });
     } else {
       alert(url);
     }
