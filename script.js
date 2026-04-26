@@ -38,6 +38,30 @@ function toggleSidebar() {
   document.getElementById("sidebar").classList.toggle("open");
 }
 
+function adminClick() {
+  if (admin) {
+    document.getElementById("adminPanel").style.display = "flex";
+  } else {
+    document.getElementById("adminLogin").style.display = "flex";
+  }
+}
+
+function openContact() {
+  document.getElementById("contactOverlay").style.display = "flex";
+}
+
+function openAbout() {
+  document.getElementById("aboutOverlay").style.display = "flex";
+}
+
+function openPrivacy() {
+  document.getElementById("privacyOverlay").style.display = "flex";
+}
+
+function openTerms() {
+  document.getElementById("termsOverlay").style.display = "flex";
+}
+
 // =====================
 // THEME FIX (DIM NOT BLACK)
 // =====================
