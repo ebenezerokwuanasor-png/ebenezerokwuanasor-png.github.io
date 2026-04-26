@@ -180,15 +180,29 @@ function renderMedia(url) {
 // LIKE SYSTEM (DB ENFORCED)
 // =======================
 async function likePost(id) {
-  if (!guard()) return;
+
+  const user = localStorage.getItem("user") ||
+               (localStorage.setItem("user", crypto.randomUUID()), localStorage.getItem("user"));
+
+  const { data } = await db
+    .from("likes")
+    .select("*")
+    .eq("post_id", id)
+    .eq("fingerprint", user);
+
+  if (data.length > 0) {
+    alert("Already liked");
+    return;
+  }
 
   await db.from("likes").insert({
     post_id: id,
-    fingerprint: localStorage.getItem("fp") || crypto.randomUUID()
+    fingerprint: user
   });
 
   loadPosts();
 }
+
 
 // =======================
 // COMMENT SYSTEM
