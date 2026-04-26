@@ -323,4 +323,28 @@ font-size:20px;
   0%{transform:rotate(0deg);}
   100%{transform:rotate(360deg);}
 }
+  #successToast{
+  position:fixed;
+  bottom:20px;
+  left:50%;
+  transform:translateX(-50%);
+  display:none;
+  z-index:99999;
+}
+
+.toastBox{
+  background:#00c853;
+  color:white;
+  padding:12px 20px;
+  border-radius:25px;
+  font-weight:bold;
+  animation:fadeInOut 3s ease;
+}
+
+@keyframes fadeInOut{
+  0%{opacity:0; transform:translateY(20px);}
+  10%{opacity:1; transform:translateY(0);}
+  90%{opacity:1;}
+  100%{opacity:0; transform:translateY(20px);}
+}
 }
