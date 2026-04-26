@@ -113,26 +113,42 @@ function closeOverlay(id) {
 // ADMIN LOGIN (SUPABASE ONLY)
 // =====================
 async function adminLogin() {
-  const email = document.getElementById("adminEmail").value;
-  const password = document.getElementById("adminPass").value;
+  let email = document.getElementById("adminEmail").value;
+  let pass = document.getElementById("adminPass").value;
+
+  let trials = getTrials();
+
+  if (trials <= 0) {
+    alert("⛔ Locked for 24 hours");
+    return;
+  }
 
   const { error } = await db.auth.signInWithPassword({
     email,
-    password
+    password: pass
   });
 
-  if (error) return alert("❌ " + error.message);
+  if (error) {
+    trials--;
+    setTrials(trials);
 
+    alert("❌ Wrong login. Trials left: " + trials);
+
+    if (trials <= 0) {
+      alert("⛔ Too many attempts. Locked for 24h");
+      setTimeout(() => setTrials(5), 86400000);
+    }
+
+    return;
+  }
+
+  setTrials(5);
   admin = true;
-  closeOverlay("adminLogin");
-  document.getElementById("adminPanel").style.display = "flex";
-  alert("✅ Admin logged in");
-}
 
-async function adminLogout() {
-  await db.auth.signOut();
-  admin = false;
-  closeOverlay("adminPanel");
+  document.getElementById("adminLogin").style.display = "none";
+  document.getElementById("adminPanel").style.display = "flex";
+
+  alert("✅ Admin login successful");
 }
 
 // =====================
