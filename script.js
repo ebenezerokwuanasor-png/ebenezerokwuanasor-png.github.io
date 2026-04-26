@@ -26,9 +26,14 @@ window.watchAds = watchAds;
 // =======================
 // INIT
 // =======================
-window.onload = () => {
-  loadPosts();
-  setupRealtime();
+window.onload = async () => {
+  try {
+    if (typeof loadPosts === "function") loadPosts();
+    if (typeof setupRealtime === "function") setupRealtime();
+    if (typeof loadFavicon === "function") loadFavicon();
+  } catch (e) {
+    console.log("Init error:", e);
+  }
 };
 
 // =======================
@@ -59,10 +64,17 @@ function openContact(){ contactOverlay.style.display="flex"; }
 // ADMIN
 // =======================
 function adminClick() {
+  console.log("Admin button clicked");
+
   const loginBox = document.getElementById("adminLogin");
   const panelBox = document.getElementById("adminPanel");
 
-  if (admin) {
+  if (!loginBox || !panelBox) {
+    alert("Admin UI missing in HTML");
+    return;
+  }
+
+  if (admin === true) {
     panelBox.style.display = "flex";
   } else {
     loginBox.style.display = "flex";
