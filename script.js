@@ -1,288 +1,279 @@
-// ===============================
+// =====================
 // SUPABASE INIT
-// ===============================
+// =====================
 const SUPABASE_URL = "https://fjiwrdecjftkflchjptr.supabase.co";
-const SUPABASE_ANON = "YOUR_ANON_KEY_HERE";
+const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqaXdyZGVjamZ0a2ZsY2hqcHRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5Nzk0OTQsImV4cCI6MjA4ODU1NTQ5NH0.tXe06ol03x8M0FLfk55_Wj6A2Y3mNny5t028gqZzYoU";
 
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
-// ===============================
+// =====================
 // STATE
-// ===============================
+// =====================
 let admin = false;
-let dark = false;
+let darkTheme = false;
 
-// ===============================
-// ELEMENT HELPERS
-// ===============================
-const $ = (id) => document.getElementById(id);
+// fingerprint (simple cookie-based identity)
+function getFingerprint() {
+  let id = localStorage.getItem("fp");
+  if (!id) {
+    id = Math.random().toString(36).substring(2) + Date.now();
+    localStorage.setItem("fp", id);
+  }
+  return id;
+}
 
-// ===============================
+// =====================
 // INIT
-// ===============================
-document.addEventListener("DOMContentLoaded", () => {
+// =====================
+window.onload = () => {
   loadPosts();
-  initButtons();
-  checkCookies();
-});
+  setupRealtime();
+  loadFavicon();
+};
 
-// ===============================
-// BUTTON BINDING (FIXED)
-// ===============================
-function initButtons() {
-
-  // sidebar
-  $("menuBtn").addEventListener("click", toggleSidebar);
-
-  $("adminBtn").addEventListener("click", adminClick);
-  $("adsBtn").addEventListener("click", watchAd);
-  $("themeBtn").addEventListener("click", toggleTheme);
-  $("contactBtn").addEventListener("click", () => openOverlay("contactOverlay"));
-
-  $("searchBtn").addEventListener("click", searchPosts);
-
-}
-
-// ===============================
-// SIDEBAR
-// ===============================
+// =====================
+// SIDEBAR FIX (IMPORTANT)
+// =====================
 function toggleSidebar() {
-  $("sidebar").classList.toggle("open");
+  document.getElementById("sidebar").classList.toggle("open");
 }
 
-// ===============================
-// THEME (FIXED DARK DIM)
-// ===============================
+// =====================
+// THEME FIX (DIM NOT BLACK)
+// =====================
 function toggleTheme() {
-  dark = !dark;
-
-  document.body.style.background = dark ? "#1a1a1a" : "#f2f2f2";
-  document.body.style.color = dark ? "#ffffff" : "#000000";
-
-  document.querySelectorAll(".post").forEach(p => {
-    p.style.color = dark ? "#fff" : "#000";
-    p.style.background = dark ? "#2a2a2a" : "#fff";
-  });
+  darkTheme = !darkTheme;
+  document.body.style.background = darkTheme ? "#dcdcdc" : "#f2f2f2";
+  document.body.style.color = darkTheme ? "#111" : "#000";
 }
 
-// ===============================
-// OVERLAYS
-// ===============================
-function openOverlay(id) {
-  $(id).style.display = "flex";
-}
-
+// =====================
+// OVERLAYS FIX
+// =====================
 function closeOverlay(id) {
-  $(id).style.display = "none";
+  document.getElementById(id).style.display = "none";
 }
 
-// ===============================
+// =====================
 // ADMIN LOGIN (SUPABASE ONLY)
-// ===============================
+// =====================
 async function adminLogin() {
-  const email = $("adminEmail").value;
-  const pass = $("adminPass").value;
+  const email = document.getElementById("adminEmail").value;
+  const password = document.getElementById("adminPass").value;
 
   const { error } = await db.auth.signInWithPassword({
     email,
-    password: pass
+    password
   });
 
-  if (error) {
-    alert("❌ Invalid login");
-    return;
-  }
+  if (error) return alert("❌ " + error.message);
 
   admin = true;
   closeOverlay("adminLogin");
-  openOverlay("adminPanel");
+  document.getElementById("adminPanel").style.display = "flex";
+  alert("✅ Admin logged in");
 }
 
-// ===============================
-// POSTS LOAD (FIXED + MEDIA + COUNTERS)
-// ===============================
+async function adminLogout() {
+  await db.auth.signOut();
+  admin = false;
+  closeOverlay("adminPanel");
+}
+
+// =====================
+// POSTS LOADING (FIXED MEDIA)
+// =====================
 async function loadPosts() {
+  const { data } = await db
+    .from("posts")
+    .select("*")
+    .order("id", { ascending: false });
 
-  const { data } = await db.from("posts").select("*").order("id", { ascending: false });
-
-  const container = $("posts");
+  const container = document.getElementById("posts");
   container.innerHTML = "";
 
-  for (let p of data) {
-
-    const media = renderMedia(p.media);
-
-    const likes = await getLikes(p.id);
-    const comments = await getCommentsCount(p.id);
-
-    const div = document.createElement("div");
-    div.className = "post";
-
-    div.innerHTML = `
-      <h3>${p.title}</h3>
-      <p>${linkify(p.body)}</p>
-
-      ${media}
-
-      <small>ID: ${p.id}</small>
-
-      <div class="actions">
-
-        <button onclick="likePost(${p.id})">❤️ ${likes}</button>
-
-        <button onclick="openComments(${p.id})">💬 ${comments}</button>
-
-        <button onclick="sharePost(${p.id}, '${p.title}')">🔗 Share</button>
-
-        <button onclick="downloadMedia('${p.media}')">⬇ Download</button>
-
-      </div>
-    `;
-
-    container.appendChild(div);
-  }
+  data.forEach(post => {
+    renderPost(post);
+  });
 }
 
-// ===============================
-// MEDIA
-// ===============================
-function renderMedia(url) {
-  if (!url) return "";
+// =====================
+// POST RENDER
+// =====================
+async function renderPost(p) {
+  const container = document.getElementById("posts");
 
-  if (url.match(/\.(jpg|png|jpeg|gif)$/)) {
-    return `<img src="${url}" />`;
+  // get likes
+  const { count: likes } = await db
+    .from("likes")
+    .select("*", { count: "exact", head: true })
+    .eq("post_id", p.id);
+
+  // get comments
+  const { count: comments } = await db
+    .from("comments")
+    .select("*", { count: "exact", head: true })
+    .eq("post_id", p.id);
+
+  let media = "";
+  if (p.media) {
+    if (p.media.match(/\.(mp4|webm)$/)) {
+      media = `<video controls src="${p.media}"></video>`;
+    } else if (p.media.match(/\.(mp3|wav)$/)) {
+      media = `<audio controls src="${p.media}"></audio>`;
+    } else {
+      media = `<img src="${p.media}">`;
+    }
   }
 
-  if (url.match(/\.(mp4|webm)$/)) {
-    return `<video controls src="${url}"></video>`;
-  }
+  const div = document.createElement("div");
+  div.className = "post";
 
-  if (url.match(/\.(mp3)$/)) {
-    return `<audio controls src="${url}"></audio>`;
-  }
+  div.innerHTML = `
+    <h3>${p.title}</h3>
+    <p>${p.body}</p>
 
-  return "";
+    ${media}
+
+    <div style="margin-top:10px">
+      ❤️ ${likes || 0}
+      💬 ${comments || 0}
+    </div>
+
+    <button onclick="likePost(${p.id})">❤️ Like</button>
+    <button onclick="openComments(${p.id})">💬 Comments</button>
+    <button onclick="sharePost(${p.id})">🔗 Share</button>
+    <button onclick="downloadMedia('${p.media}')">⬇️ Download</button>
+
+    <div>ID: ${p.id}</div>
+  `;
+
+  container.appendChild(div);
 }
 
-// ===============================
-// LINK DETECTOR (FIXED)
-// ===============================
-function linkify(text) {
-  return text.replace(
-    /(https?:\/\/[^\s]+)/g,
-    `<a href="$1" target="_blank">$1</a>`
-  );
-}
+// =====================
+// LIKE SYSTEM (1 PER DEVICE)
+// =====================
+async function likePost(postId) {
+  const fp = getFingerprint();
 
-// ===============================
-// LIKES (DB CONTROLLED)
-// ===============================
-async function likePost(id) {
-
-  const already = localStorage.getItem("liked_" + id);
-
-  if (already) return alert("Already liked");
-
-  await db.from("likes").insert({ post_id: id });
-
-  localStorage.setItem("liked_" + id, "1");
+  await db.from("likes").insert({
+    post_id: postId,
+    user_fingerprint: fp
+  });
 
   loadPosts();
 }
 
-async function getLikes(id) {
-  const { count } = await db
-    .from("likes")
-    .select("*", { count: "exact", head: true })
-    .eq("post_id", id);
+// =====================
+// COMMENTS SYSTEM
+// =====================
+async function openComments(postId) {
+  const name = prompt("Your name:");
+  const comment = prompt("Write comment:");
 
-  return count || 0;
+  if (!name || !comment) return;
+
+  await db.from("comments").insert({
+    post_id: postId,
+    name,
+    comment
+  });
+
+  loadPosts();
 }
 
-// ===============================
-// COMMENTS (COUNT ONLY HERE)
-// ===============================
-async function getCommentsCount(id) {
-  const { count } = await db
-    .from("comments")
-    .select("*", { count: "exact", head: true })
-    .eq("post_id", id);
+// =====================
+// SHARE (WITH AD GATE)
+// =====================
+function sharePost(postId) {
+  showAd(() => {
+    const url = window.location.href + "?post=" + postId;
 
-  return count || 0;
+    if (navigator.share) {
+      navigator.share({ title: "Post", url });
+    } else {
+      alert(url);
+    }
+  });
 }
 
-// ===============================
-// SHARE (AD GATED)
-// ===============================
-function sharePost(id, title) {
+// =====================
+// ADS SYSTEM (FIXED)
+// =====================
+function showAd(callback) {
+  const box = document.getElementById("adOverlay");
+  box.style.display = "flex";
 
-  watchAd();
+  let script = document.createElement("script");
+  script.src = "https://pl29052599.profitablecpmratenetwork.com/24/cb/b7/24cbb72257475dcd544b0346aee1dd35.js";
+  document.getElementById("adContainer").appendChild(script);
 
   setTimeout(() => {
-    const url = `${window.location.origin}?post=${id}`;
-
-    navigator.share?.({
-      title,
-      url
-    }) || alert(url);
-
-  }, 3000);
+    box.style.display = "none";
+    document.getElementById("adContainer").innerHTML = "";
+    callback();
+  }, 6000);
 }
 
-// ===============================
-// DOWNLOAD
-// ===============================
-function downloadMedia(url) {
-  if (!url) return;
+// =====================
+// SEARCH FIX
+// =====================
+function searchPosts() {
+  const q = document.getElementById("searchInput").value.toLowerCase();
 
+  document.querySelectorAll(".post").forEach(p => {
+    p.style.display = p.innerText.toLowerCase().includes(q)
+      ? "block"
+      : "none";
+  });
+}
+
+// =====================
+// VIEW TRACKING (AD REVENUE LOGIC)
+// =====================
+async function trackView(postId) {
+  await db.from("views").insert({
+    post_id: postId,
+    user_fingerprint: getFingerprint()
+  });
+}
+
+// =====================
+// DOWNLOAD MEDIA
+// =====================
+function downloadMedia(url) {
+  if (!url) return alert("No media");
   const a = document.createElement("a");
   a.href = url;
-  a.download = "media";
+  a.download = "";
   a.click();
 }
 
-// ===============================
-// ADS (ADSTERRA INTEGRATION)
-// ===============================
-function watchAd() {
-  const container = $("adContainer");
-  container.innerHTML = "";
+// =====================
+// REALTIME FIX
+// =====================
+function setupRealtime() {
+  db.channel("posts-live")
+    .on("postgres_changes", { event: "*", schema: "public", table: "posts" }, loadPosts)
+    .subscribe();
 
-  const script = document.createElement("script");
-  script.src = "https://pl29052599.profitablecpmratenetwork.com/24/cb/b7/24cbb72257475dcd544b0346aee1dd35.js";
+  db.channel("comments-live")
+    .on("postgres_changes", { event: "*", schema: "public", table: "comments" }, loadPosts)
+    .subscribe();
 
-  container.appendChild(script);
-
-  openOverlay("adOverlay");
-
-  setTimeout(() => {
-    closeOverlay("adOverlay");
-  }, 8000);
+  db.channel("likes-live")
+    .on("postgres_changes", { event: "*", schema: "public", table: "likes" }, loadPosts)
+    .subscribe();
 }
 
-// ===============================
-// SEARCH (FIXED)
-// ===============================
-function searchPosts() {
-
-  const q = $("searchInput").value.toLowerCase();
-
-  document.querySelectorAll(".post").forEach(p => {
-
-    const text = p.innerText.toLowerCase();
-
-    p.style.display = text.includes(q) ? "block" : "none";
-
-  });
-
-}
-
-// ===============================
-// COOKIES CONSENT
-// ===============================
-function checkCookies() {
-  if (!localStorage.getItem("cookies")) {
-    alert("This site uses cookies");
-    localStorage.setItem("cookies", "accepted");
+// =====================
+// FAVICON FIX
+// =====================
+async function loadFavicon() {
+  const { data } = await db.storage.from("favicon").download("favicon.png");
+  if (data) {
+    const url = URL.createObjectURL(data);
+    document.getElementById("faviconTag").href = url;
   }
 }
