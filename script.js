@@ -240,11 +240,43 @@ function setupRealtime() {
 // =======================
 // FAVICON FIX
 // =======================
-async function loadFavicon() {
-  const { data } = await db.storage.from("favicon").download("favicon.png");
+async function changeFavicon() {
+  if (!admin) return alert("Admin only!");
 
-  if (data) {
-    const url = URL.createObjectURL(data);
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = "image/png,image/jpeg,image/webp";
+
+  input.onchange = async () => {
+    const file = input.files[0];
+    if (!file) return;
+
+    // size check (optional safety)
+    if (file.size > 500000) {
+      alert("❌ File too large (max 500KB)");
+      return;
+    }
+
+    const fileName = "favicon_" + Date.now();
+
+    const { error } = await db.storage
+      .from("favicon")
+      .upload(fileName, file, { upsert: true });
+
+    if (error) {
+      alert("❌ Upload failed: " + error.message);
+      return;
+    }
+
+    // get public URL
+    const { data } = db.storage.from("favicon").getPublicUrl(fileName);
+    const url = data.publicUrl;
+
+    // apply instantly
     document.getElementById("faviconTag").href = url;
-  }
+
+    alert("✅ Favicon updated!");
+  };
+
+  input.click();
 }
