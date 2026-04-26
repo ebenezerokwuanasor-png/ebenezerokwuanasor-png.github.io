@@ -386,3 +386,10 @@ async function loadFavicon() {
     document.getElementById("faviconTag").href = url;
   }
 }
+function getTrials() {
+  return parseInt(localStorage.getItem("adminTrials") || "5");
+}
+
+function setTrials(v) {
+  localStorage.setItem("adminTrials", v);
+}
