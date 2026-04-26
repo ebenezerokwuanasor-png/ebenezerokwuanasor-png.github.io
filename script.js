@@ -58,8 +58,15 @@ function openContact(){ contactOverlay.style.display="flex"; }
 // =======================
 // ADMIN
 // =======================
-function adminClick(){
-  adminLogin.style.display="flex";
+function adminClick() {
+  const loginBox = document.getElementById("adminLogin");
+  const panelBox = document.getElementById("adminPanel");
+
+  if (admin) {
+    panelBox.style.display = "flex";
+  } else {
+    loginBox.style.display = "flex";
+  }
 }
 
 // =======================
