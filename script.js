@@ -83,19 +83,26 @@ function adminClick() {
 // ADMIN LOGIN (SUPABASE ONLY)
 // =======================
 async function adminLogin() {
-  const email = adminEmail.value;
-  const password = adminPass.value;
+
+  const email = document.getElementById("adminEmail").value;
+  const password = document.getElementById("adminPass").value;
 
   const { error } = await db.auth.signInWithPassword({
     email,
     password
   });
 
-  if (error) return alert(error.message);
+  if (error) {
+    alert(error.message);
+    return;
+  }
 
   admin = true;
-  adminLoginBox.style.display = "none";
-  adminPanel.style.display = "flex";
+
+  document.getElementById("adminLogin").style.display = "none";
+  document.getElementById("adminPanel").style.display = "flex";
+
+  alert("Login successful");
 }
 
 // =======================
