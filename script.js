@@ -167,8 +167,12 @@ async function loadPosts() {
 function renderMedia(url) {
   if (!url) return "";
 
-  if (url.match(/\.(mp4|webm)$/)) return `<video controls src="${url}"></video>`;
-  if (url.match(/\.(mp3|wav)$/)) return `<audio controls src="${url}"></audio>`;
+  if (url.match(/\.(mp4|webm)$/i))
+    return `<video controls src="${url}"></video>`;
+
+  if (url.match(/\.(mp3|wav)$/i))
+    return `<audio controls src="${url}"></audio>`;
+
   return `<img src="${url}">`;
 }
 
