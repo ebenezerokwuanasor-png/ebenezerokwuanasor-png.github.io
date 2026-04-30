@@ -1,9 +1,3 @@
-// =======================
-// LOGIN SECURITY SYSTEM
-// =======================
-let loginAttempts = 0;
-let lockedUntil = 0;
-
 window.adminLogin = adminLogin;
 
 // ==========================
@@ -20,26 +14,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
 window.adminLogin = async function () {
 
-  const now = Date.now();
+  // SAFE fallback if roller missing
+  const useRoller = typeof showRoller === "function";
 
-  // BLOCK IF LOCKED
-  if (now < lockedUntil) {
-    toast("Try again later", false);
+  if (useRoller) showRoller("Logging in...");
+
+  const email = document.getElementById("adminEmail")?.value;
+  const password = document.getElementById("adminPass")?.value;
+
+  if (!email || !password) {
+    if (useRoller) hideRoller();
+    alert("Missing login fields");
     return;
   }
-
-  // LIMIT ATTEMPTS
-  if (loginAttempts >= 3) {
-    lockedUntil = Date.now() + 60000; // 1 minute lock
-    loginAttempts = 0;
-    toast("Too many attempts. Locked for 60s", false);
-    return;
-  }
-
-  showRoller("Authenticating...");
-
-  const email = document.getElementById("adminEmail").value;
-  const password = document.getElementById("adminPass").value;
 
   const { error } = await db.auth.signInWithPassword({
     email,
@@ -47,26 +34,20 @@ window.adminLogin = async function () {
   });
 
   if (error) {
-
-    loginAttempts++;
-
-    hideRoller(false);
-    toast(`Wrong credentials (${loginAttempts}/3)`, false);
-
+    if (useRoller) hideRoller();
+    alert("❌ Wrong password");
     return;
   }
-
-  // SUCCESS RESET
-  loginAttempts = 0;
 
   window.admin = true;
   localStorage.setItem("admin", "true");
 
-  hideRoller(true);
-  toast("Login successful", true);
+  if (useRoller) hideRoller();
 
   document.getElementById("adminLogin").style.display = "none";
   document.getElementById("adminPanel").style.display = "flex";
+
+  alert("Login successful");
 };
 
 // ==========================
