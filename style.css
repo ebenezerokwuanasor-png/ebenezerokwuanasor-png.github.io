@@ -259,74 +259,57 @@ color:white;
 .banner{
 font-size:20px;
 }
-  #loaderOverlay{
+
+.rollerOverlay{
+  display:none;
   position:fixed;
   top:0;
   left:0;
   width:100%;
   height:100%;
-  background:rgba(0,0,0,0.7);
-  display:none;
+  background:rgba(0,0,0,0.65);
   justify-content:center;
   align-items:center;
-  z-index:99999;
+  z-index:999999;
+  transition:0.3s;
 }
 
-.loaderBox{
+.rollerBox{
   background:white;
-  padding:25px;
+  padding:25px 30px;
   border-radius:12px;
   text-align:center;
+  min-width:220px;
+  box-shadow:0 10px 40px rgba(0,0,0,0.25);
+  animation:pop 0.2s ease;
+}
+
+@keyframes pop{
+  from{transform:scale(0.9);opacity:0}
+  to{transform:scale(1);opacity:1}
 }
 
 .spinner{
-  width:40px;
-  height:40px;
-  border:5px solid #ddd;
-  border-top:5px solid #ff6a00;
+  width:42px;
+  height:42px;
+  border:4px solid #ddd;
+  border-top:4px solid #ff6a00;
   border-radius:50%;
-  animation: spin 1s linear infinite;
-  margin:auto;
+  animation:spin 1s linear infinite;
+  margin:10px auto;
 }
 
 @keyframes spin{
-  0%{transform:rotate(0deg);}
-  100%{transform:rotate(360deg);}
-}
-  #successToast{
-  position:fixed;
-  bottom:20px;
-  left:50%;
-  transform:translateX(-50%);
-  display:none;
-  z-index:99999;
+  0%{transform:rotate(0deg)}
+  100%{transform:rotate(360deg)}
 }
 
-.toastBox{
-  background:#00c853;
-  color:white;
-  padding:12px 20px;
-  border-radius:25px;
-  font-weight:bold;
-  animation:fadeInOut 3s ease;
+/* SUCCESS STATE */
+.rollerOverlay.success .rollerBox{
+  border:2px solid #00c853;
 }
 
-@keyframes fadeInOut{
-  0%{opacity:0; transform:translateY(20px);}
-  10%{opacity:1; transform:translateY(0);}
-  90%{opacity:1;}
-  100%{opacity:0; transform:translateY(20px);}
-}
-
-  #rollerOverlay{
-  position:fixed !important;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  background:rgba(0,0,0,0.6);
-  display:none;
-  justify-content:center;
-  align-items:center;
-  z-index:999999 !important;
+/* ERROR STATE */
+.rollerOverlay.error .rollerBox{
+  border:2px solid #ff1744;
 }
