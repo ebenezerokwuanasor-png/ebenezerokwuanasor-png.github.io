@@ -1,4 +1,11 @@
+// =======================
+// LOGIN SECURITY SYSTEM
+// =======================
+let loginAttempts = 0;
+let lockedUntil = 0;
+
 window.adminLogin = adminLogin;
+
 // ==========================
 // FIXES.JS (CLEAN STABLE VERSION)
 // ==========================
@@ -11,38 +18,57 @@ document.addEventListener("DOMContentLoaded", () => {
   fixPasswordEye();
 }); 
 
-window.adminLogin = async function(){
+window.adminLogin = async function () {
 
-  showRoller("Logging in...");
+  const now = Date.now();
 
-  try{
-
-    let email = document.getElementById("adminEmail").value;
-    let pass = document.getElementById("adminPass").value;
-
-    const { error } = await db.auth.signInWithPassword({
-      email,
-      password: pass
-    });
-
-    if(error){
-      hideRoller(false);
-      alert("❌ " + error.message); // ← THIS FIXES YOUR ISSUE
-      return;
-    }
-
-    window.admin = true;
-
-    hideRoller(true);
-
-    document.getElementById("adminLogin").style.display = "none";
-    document.getElementById("adminPanel").style.display = "flex";
-
-  }catch(e){
-    hideRoller(false);
-    alert("Login failed");
+  // BLOCK IF LOCKED
+  if (now < lockedUntil) {
+    toast("Try again later", false);
+    return;
   }
+
+  // LIMIT ATTEMPTS
+  if (loginAttempts >= 3) {
+    lockedUntil = Date.now() + 60000; // 1 minute lock
+    loginAttempts = 0;
+    toast("Too many attempts. Locked for 60s", false);
+    return;
+  }
+
+  showRoller("Authenticating...");
+
+  const email = document.getElementById("adminEmail").value;
+  const password = document.getElementById("adminPass").value;
+
+  const { error } = await db.auth.signInWithPassword({
+    email,
+    password
+  });
+
+  if (error) {
+
+    loginAttempts++;
+
+    hideRoller(false);
+    toast(`Wrong credentials (${loginAttempts}/3)`, false);
+
+    return;
+  }
+
+  // SUCCESS RESET
+  loginAttempts = 0;
+
+  window.admin = true;
+  localStorage.setItem("admin", "true");
+
+  hideRoller(true);
+  toast("Login successful", true);
+
+  document.getElementById("adminLogin").style.display = "none";
+  document.getElementById("adminPanel").style.display = "flex";
 };
+
 // ==========================
 // 🔔 TOAST SYSTEM
 // ==========================
