@@ -8,26 +8,40 @@
 document.addEventListener("DOMContentLoaded", () => {
   fixCloseButtons();
   fixPasswordEye();
-});
+}); 
 
-// ==========================
-// 🔄 LOADER SYSTEM
-// ==========================
-window.showLoader = function (text = "Please wait...") {
-  const el = document.getElementById("loaderOverlay");
-  const txt = document.getElementById("loaderText");
+window.adminLogin = async function(){
 
-  if (!el) return;
+  showRoller("Logging in...");
 
-  if (txt) txt.innerText = text;
-  el.style.display = "flex";
+  try{
+
+    let email = document.getElementById("adminEmail").value;
+    let pass = document.getElementById("adminPass").value;
+
+    const { error } = await db.auth.signInWithPassword({
+      email,
+      password: pass
+    });
+
+    if(error){
+      hideRoller(false);
+      alert("❌ " + error.message); // ← THIS FIXES YOUR ISSUE
+      return;
+    }
+
+    window.admin = true;
+
+    hideRoller(true);
+
+    document.getElementById("adminLogin").style.display = "none";
+    document.getElementById("adminPanel").style.display = "flex";
+
+  }catch(e){
+    hideRoller(false);
+    alert("Login failed");
+  }
 };
-
-window.hideLoader = function () {
-  const el = document.getElementById("loaderOverlay");
-  if (el) el.style.display = "none";
-};
-
 // ==========================
 // 🔔 TOAST SYSTEM
 // ==========================
