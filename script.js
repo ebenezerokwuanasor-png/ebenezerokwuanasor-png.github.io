@@ -91,36 +91,6 @@ function adminClick() {
   }
 }
 
-// =======================
-// LOGIN
-// =======================
-
-async function adminLogin(){
-
-  showRoller("Logging in...");
-
-  const email = document.getElementById("adminEmail").value;
-  const password = document.getElementById("adminPass").value;
-
-  const { error } = await db.auth.signInWithPassword({
-    email,
-    password
-  });
-
-  if(error){
-    hideRoller(false);
-    alert("Login failed: " + error.message);
-    return;
-  }
-
-  admin = true;
-
-  document.getElementById("adminLogin").style.display="none";
-  document.getElementById("adminPanel").style.display="flex";
-
-  hideRoller(true);
-}
-
 //  ================
 // POSTS
 // =======================
