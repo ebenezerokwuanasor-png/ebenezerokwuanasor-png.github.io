@@ -84,25 +84,31 @@ function adminClick() {
 // =======================
 // LOGIN
 // =======================
-async function adminLogin(){
-  const email = adminEmail.value;
-  const password = adminPass.value;
 
-  const { error } = await db.auth.signInWithPassword({
-    email, password
-  });
+async function adminLogin(){
+
+  showRoller("Logging in...");
+
+  const email = document.getElementById("adminEmail").value;
+  const password = document.getElementById("adminPass").value;
+
+  const { error } = await db.auth.signInWithPassword({ email, password });
 
   if(error){
+    hideRoller(false);
     alert(error.message);
     return;
   }
 
   admin = true;
-  adminLogin.style.display="none";
-  adminPanel.style.display="flex";
+
+  document.getElementById("adminLogin").style.display="none";
+  document.getElementById("adminPanel").style.display="flex";
+
+  hideRoller(true);
 }
 
-// =======================
+  async================
 // POSTS
 // =======================
 async function loadPosts(){
@@ -148,33 +154,48 @@ function renderMedia(url){
 // =======================
 // CREATE POST
 // =======================
+
 async function createPost(){
+
+  showRoller("Publishing post...");
 
   const title = postTitle.value;
   const body = postBody.value;
 
-  let file = mediaFile.files[0];
-  let media = mediaURL.value;
-
-  await db.from("posts").insert({
+  const { error } = await db.from("posts").insert({
     title,
     body,
-    media
+    media: mediaURL.value
   });
 
-  loadPosts();
-  alert("Posted successfully");
-}
+  if(error){
+    hideRoller(false);
+    return alert(error.message);
+  }
 
-// =======================
+  loadPosts();
+  hideRoller(true);
+}
+  =======================
 // DELETE POST
 // =======================
-async function deletePost(){
-  let id = prompt("Post ID");
+
+  async function deletePost(){
+
+  const id = prompt("Post ID");
   if(!id) return;
 
-  await db.from("posts").delete().eq("id",id);
+  showRoller("Deleting post...");
+
+  const { error } = await db.from("posts").delete().eq("id", id);
+
+  if(error){
+    hideRoller(false);
+    return alert(error.message);
+  }
+
   loadPosts();
+  hideRoller(true);
 }
 
 // =======================
@@ -188,6 +209,18 @@ function searchPosts(){
       p.innerText.toLowerCase().includes(q)
       ? "block":"none";
   });
+}
+
+async function adminLogout(){
+
+  showRoller("Logging out...");
+
+  await db.auth.signOut();
+
+  admin=false;
+  document.getElementById("adminPanel").style.display="none";
+
+  hideRoller(true);
 }
 
 // =======================
@@ -232,7 +265,41 @@ function setupRealtime(){
 // LOGOUT
 // =======================
 async function adminLogout(){
+
+  showRoller("Logging out...");
+
   await db.auth.signOut();
+
   admin=false;
-  adminPanel.style.display="none";
+  document.getElementById("adminPanel").style.display="none";
+
+  hideRoller(true);
+}
+
+async function changeFavicon(){
+
+  if(!admin) return alert("Admin only!");
+
+  const input = document.createElement("input");
+  input.type="file";
+
+  input.onchange = async ()=>{
+
+    showRoller("Uploading favicon...");
+
+    const file = input.files[0];
+
+    const { error } = await db.storage
+      .from("favicon")
+      .upload("favicon.png", file, { upsert:true });
+
+    if(error){
+      hideRoller(false);
+      return alert(error.message);
+    }
+
+    hideRoller(true);
+  };
+
+  input.click();
 }
