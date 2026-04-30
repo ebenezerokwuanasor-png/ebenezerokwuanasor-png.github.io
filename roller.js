@@ -2,25 +2,30 @@
 // ROLLER SYSTEM
 // =======================
 
-function showRoller(text="Please wait..."){
+window.showRoller = function(text="Please wait...") {
+
   const overlay = document.getElementById("rollerOverlay");
   const msg = document.getElementById("rollerText");
 
-  msg.innerText = text;
-  overlay.style.display = "flex";
-}
-
-function hideRoller(success=true){
-
-  const msg = document.getElementById("rollerText");
-
-  if(success){
-    msg.innerText = "✅ Success";
-  }else{
-    msg.innerText = "❌ Failed";
+  if (!overlay || !msg) {
+    console.log("ROLLER MISSING IN HTML");
+    return;
   }
 
-  setTimeout(()=>{
-    document.getElementById("rollerOverlay").style.display = "none";
-  },1000);
-}
+  overlay.style.display = "flex";
+  msg.innerText = text;
+};
+
+window.hideRoller = function(success=true) {
+
+  const overlay = document.getElementById("rollerOverlay");
+  const msg = document.getElementById("rollerText");
+
+  if (!overlay || !msg) return;
+
+  msg.innerText = success ? "Success" : "Failed";
+
+  setTimeout(() => {
+    overlay.style.display = "none";
+  }, 800);
+};
