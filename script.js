@@ -88,9 +88,20 @@ window.onload = async () => {
 // =======================
 // UI FIX
 // =======================
-function toggleSidebar(){
-  document.getElementById("sidebar").classList.toggle("open");
-}
+
+// =======================
+// SIDEBAR FIX (100% SAFE)
+// =======================
+window.toggleSidebar = function () {
+  const sidebar = document.getElementById("sidebar");
+
+  if (!sidebar) {
+    console.log("Sidebar element not found");
+    return;
+  }
+
+  sidebar.classList.toggle("open");
+};
 
 function closeOverlay(id){
   document.getElementById(id).style.display="none";
