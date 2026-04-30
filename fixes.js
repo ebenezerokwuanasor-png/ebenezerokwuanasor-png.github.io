@@ -16,11 +16,17 @@ window.adminLogin = async function () {
 
   showRoller("Checking fields...");
 
-  const email = adminEmail.value;
-  const password = adminPass.value;
+  const emailInput = document.getElementById("adminEmail");
+  const passInput = document.getElementById("adminPass");
+
+  const email = emailInput.value.trim();
+  const password = passInput.value.trim();
 
   if (!email || !password) {
-    errorRoller("Missing fields");
+    errorRoller("Missing email or password");
+
+    emailInput.value = "";
+    passInput.value = "";
     return;
   }
 
@@ -32,21 +38,23 @@ window.adminLogin = async function () {
   });
 
   if (error) {
-    errorRoller("Wrong email or password");
+    errorRoller("Login failed");
+
+    emailInput.value = "";
+    passInput.value = "";
     return;
   }
+
+  successRoller("Login successful");
 
   window.admin = true;
   localStorage.setItem("admin", "true");
 
-  successRoller("Login successful");
-
   setTimeout(() => {
     adminLogin.style.display = "none";
     adminPanel.style.display = "flex";
-  }, 900);
+  }, 800);
 };
-
 
 // ==========================
 // 🔔 TOAST SYSTEM
