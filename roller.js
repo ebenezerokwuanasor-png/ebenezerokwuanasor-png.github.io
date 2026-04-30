@@ -1,10 +1,12 @@
-console.log("ROLLER ACTIVE ✅");
-
 window.showRoller = function (text = "Please wait...") {
+
   const el = document.getElementById("rollerOverlay");
   const txt = document.getElementById("rollerText");
 
-  if (!el) return;
+  if (!el) {
+    console.warn("ROLLER MISSING");
+    return;
+  }
 
   if (txt) txt.innerText = text;
 
@@ -17,11 +19,7 @@ window.showRoller = function (text = "Please wait...") {
   el.style.zIndex = "999999";
 };
 
-window.hideRoller = function (success = true) {
+window.hideRoller = function () {
   const el = document.getElementById("rollerOverlay");
   if (el) el.style.display = "none";
-
-  if (window.toast) {
-    toast(success ? "Success" : "Failed", success);
-  }
 };
