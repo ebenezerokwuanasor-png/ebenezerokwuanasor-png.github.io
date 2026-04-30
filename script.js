@@ -120,18 +120,11 @@ function openContact(){ contactOverlay.style.display="flex"; }
 // ADMIN
 // =======================
 function adminClick() {
-  const login = document.getElementById("adminLogin");
-  const panel = document.getElementById("adminPanel");
-
-  if (!login || !panel) {
-    alert("Admin UI missing");
-    return;
-  }
 
   if (admin) {
-    panel.style.display = "flex";
+    openOverlay("adminPanel");
   } else {
-    login.style.display = "flex";
+    openOverlay("adminLogin");
   }
 }
 
