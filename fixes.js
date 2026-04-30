@@ -52,7 +52,8 @@ window.adminLogin = async function () {
 
   setTimeout(() => {
     adminLogin.style.display = "none";
-    adminPanel.style.display = "flex";
+    openOverlay("adminPanel");
+closeOverlay("adminLogin");
   }, 800);
 };
 
