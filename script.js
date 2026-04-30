@@ -7,13 +7,13 @@ const SUPABASE_URL = "https://fjiwrdecjftkflchjptr.supabase.co";
 const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqaXdyZGVjamZ0a2ZsY2hqcHRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5Nzk0OTQsImV4cCI6MjA4ODU1NTQ5NH0.tXe06ol03x8M0FLfk55_Wj6A2Y3mNny5t028gqZzYoU";
 
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
 window.changeFavicon = function () {
 
-  if (!window.admin) return alert("Admin only!");
+  if (!window.admin) return errorRoller("Admin only");
 
   const input = document.createElement("input");
   input.type = "file";
-  input.accept = "image/png,image/jpeg,image/webp";
 
   input.onchange = async () => {
 
@@ -22,42 +22,21 @@ window.changeFavicon = function () {
 
     showRoller("Uploading favicon...");
 
-    try {
+    const { error } = await db.storage
+      .from("favicon")
+      .upload("favicon.png", file, { upsert: true });
 
-      const fileName = "favicon.png";
-
-      const { error } = await db.storage
-        .from("favicon")
-        .upload(fileName, file, {
-          upsert: true
-        });
-
-      if (error) {
-        hideRoller(false);
-        alert("Upload failed: " + error.message);
-        return;
-      }
-
-      // refresh favicon instantly
-      const url = `${SUPABASE_URL}/storage/v1/object/public/favicon/${fileName}`;
-
-      const icon = document.getElementById("faviconTag");
-      const sidebarIcon = document.getElementById("sidebarFavicon");
-
-      if (icon) icon.href = url;
-      if (sidebarIcon) sidebarIcon.src = url;
-
-      hideRoller(true);
-      toast("Favicon updated", true);
-
-    } catch (err) {
-      hideRoller(false);
-      alert("Unexpected error");
+    if (error) {
+      errorRoller("Upload failed");
+      return;
     }
+
+    successRoller("Favicon updated");
   };
 
   input.click();
 };
+
 // =======================
 // STATE
 // =======================
@@ -96,7 +75,7 @@ window.onload = async () => {
 // UI FIX
 // =======================
 
-// =====function=============
+// ==================
 // SIDEBAR FIX (100% SAFE)
 // =======================
 window.toggleSidebar = function () {
@@ -204,29 +183,66 @@ function renderMedia(url){
 // =======================
 // CREATE POST
 // =======================
+window.createPost = async function () {
 
-async function createPost(){
+  if (!window.admin) return errorRoller("Admin only");
 
-  showRoller("Publishing post...");
+  showRoller("Uploading post...");
 
-  const title = postTitle.value;
-  const body = postBody.value;
+  const title = postTitle.value.trim();
+  const body = postBody.value.trim();
+  const file = mediaFile.files[0];
+  const url = mediaURL.value.trim();
 
-  const { error } = await db.from("posts").insert({
-    title,
-    body,
-    media: mediaURL.value
-  });
-
-  if(error){
-    hideRoller(false);
-    return alert(error.message);
+  if (!title || !body) {
+    errorRoller("Title or body missing");
+    return;
   }
 
-  loadPosts();
-  hideRoller(true);
-}
-  =======================
+  let media = url;
+
+  try {
+
+    if (file) {
+      updateRoller("Uploading media...");
+
+      const fileName = Date.now() + "_" + file.name;
+
+      const { error } = await db.storage
+        .from("posts")
+        .upload(fileName, file);
+
+      if (error) throw error;
+
+      const res = db.storage.from("posts").getPublicUrl(fileName);
+      media = res.data.publicUrl;
+    }
+
+    updateRoller("Saving post...");
+
+    const { error } = await db.from("posts").insert({
+      title,
+      body,
+      media
+    });
+
+    if (error) throw error;
+
+    successRoller("Post uploaded");
+
+    postTitle.value = "";
+    postBody.value = "";
+    mediaFile.value = "";
+    mediaURL.value = "";
+
+    loadPosts();
+
+  } catch (e) {
+    errorRoller("Upload failed");
+  }
+};
+
+// =======================
 // DELETE POST
 // =======================
 
@@ -298,6 +314,7 @@ function setupRealtime(){
     )
     .subscribe();
 }
+
 window.adminLogout = async function () {
 
   showRoller("Logging out...");
@@ -307,8 +324,13 @@ window.adminLogout = async function () {
   window.admin = false;
   localStorage.removeItem("admin");
 
-  hideRoller(true);
-  toast("Logged out", true);
+  // clear inputs
+  adminEmail.value = "";
+  adminPass.value = "";
 
-  document.getElementById("adminPanel").style.display = "none";
+  successRoller("Logged out");
+
+  setTimeout(() => {
+    adminPanel.style.display = "none";
+  }, 800);
 };
