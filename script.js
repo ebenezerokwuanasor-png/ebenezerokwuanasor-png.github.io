@@ -1,3 +1,5 @@
+console.log("SCRIPT LOADED ✅");
+
 // =======================
 // ROLLER SYSTEM FIX
 // =======================
@@ -64,7 +66,6 @@ let theme = false;
 // =======================
 // WINDOW EXPORT FIX
 // =======================
-window.toggleSidebar = toggleSidebar;
 window.adminClick = adminClick;
 window.adminLogin = adminLogin;
 window.adminLogout = adminLogout;
