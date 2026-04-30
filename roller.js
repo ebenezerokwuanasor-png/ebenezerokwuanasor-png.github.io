@@ -1,31 +1,31 @@
-// =======================
-// ROLLER SYSTEM
-// =======================
+console.log("ROLLER ACTIVE ✅");
 
-window.showRoller = function(text="Please wait...") {
+window.showRoller = function(text = "Please wait...") {
+  let overlay = document.getElementById("rollerOverlay");
+  let txt = document.getElementById("rollerText");
 
-  const overlay = document.getElementById("rollerOverlay");
-  const msg = document.getElementById("rollerText");
-
-  if (!overlay || !msg) {
-    console.log("ROLLER MISSING IN HTML");
+  if (!overlay) {
+    console.error("rollerOverlay missing in HTML");
     return;
   }
 
+  txt.innerText = text;
   overlay.style.display = "flex";
-  msg.innerText = text;
 };
 
-window.hideRoller = function(success=true) {
+window.hideRoller = function(success = true) {
+  let overlay = document.getElementById("rollerOverlay");
+  if (overlay) overlay.style.display = "none";
 
-  const overlay = document.getElementById("rollerOverlay");
-  const msg = document.getElementById("rollerText");
+  let toast = document.getElementById("successToast");
+  if (!toast) return;
 
-  if (!overlay || !msg) return;
+  let box = toast.querySelector(".toastBox");
+  box.innerText = success ? "✅ Success" : "❌ Failed";
 
-  msg.innerText = success ? "Success" : "Failed";
+  toast.style.display = "block";
 
   setTimeout(() => {
-    overlay.style.display = "none";
-  }, 800);
+    toast.style.display = "none";
+  }, 2500);
 };
