@@ -1,55 +1,6 @@
 console.log("SCRIPT LOADED ✅");
 
 // =======================
-// ROLLER SYSTEM FIX
-// =======================
-function showRoller(text = "Please wait...") {
-  let roller = document.getElementById("rollerOverlay");
-
-  if (!roller) {
-    roller = document.createElement("div");
-    roller.id = "rollerOverlay";
-    roller.className = "rollerOverlay";
-    roller.innerHTML = `
-      <div class="rollerBox">
-        <div class="spinner"></div>
-        <p id="rollerText">${text}</p>
-      </div>
-    `;
-    document.body.appendChild(roller);
-  }
-
-  const txt = document.getElementById("rollerText");
-  if (txt) txt.innerText = text;
-
-  roller.style.display = "flex";
-}
-
-function hideRoller(success = true) {
-  const roller = document.getElementById("rollerOverlay");
-  if (roller) roller.style.display = "none";
-
-  if (success) {
-    showToast("✅ Success");
-  } else {
-    showToast("❌ Failed");
-  }
-}
-
-// toast helper
-function showToast(msg) {
-  let toast = document.getElementById("successToast");
-  if (!toast) return;
-
-  toast.querySelector(".toastBox").innerText = msg;
-  toast.style.display = "block";
-
-  setTimeout(() => {
-    toast.style.display = "none";
-  }, 2500);
-}
-
-// =======================
 // SUPABASE INIT
 // =======================
 const SUPABASE_URL = "https://fjiwrdecjftkflchjptr.supabase.co";
