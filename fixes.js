@@ -125,3 +125,17 @@ window.watchAds = function () {
     container.innerHTML = "";
   }, 8000);
 };
+
+window.openOverlay = function (id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+
+  el.style.display = "flex";
+};
+
+window.closeOverlay = function (id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+
+  el.style.display = "none";
+};
