@@ -1,3 +1,4 @@
+window.adminLogin = adminLogin;
 // ==========================
 // FIXES.JS (CLEAN STABLE VERSION)
 // ==========================
