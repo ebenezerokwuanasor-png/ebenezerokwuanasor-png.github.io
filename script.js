@@ -18,7 +18,6 @@ let theme = false;
 // WINDOW EXPORT FIX
 // =======================
 window.adminClick = adminClick;
-window.adminLogin = adminLogin;
 window.adminLogout = adminLogout;
 window.searchPosts = searchPosts;
 window.toggleTheme = toggleTheme;
