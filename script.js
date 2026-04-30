@@ -1,28 +1,52 @@
-function showRoller(msg="Please wait..."){
-  const el = document.getElementById("rollerOverlay");
-  const txt = document.getElementById("rollerText");
+// =======================
+// ROLLER SYSTEM FIX
+// =======================
+function showRoller(text = "Please wait...") {
+  let roller = document.getElementById("rollerOverlay");
 
-  if(!el || !txt){
-    console.log("ROLLER MISSING");
-    return;
+  if (!roller) {
+    roller = document.createElement("div");
+    roller.id = "rollerOverlay";
+    roller.className = "rollerOverlay";
+    roller.innerHTML = `
+      <div class="rollerBox">
+        <div class="spinner"></div>
+        <p id="rollerText">${text}</p>
+      </div>
+    `;
+    document.body.appendChild(roller);
   }
 
-  txt.innerText = msg;
-  el.style.display = "flex";
-}
-
-function hideRoller(ok=true){
-  const el = document.getElementById("rollerOverlay");
   const txt = document.getElementById("rollerText");
+  if (txt) txt.innerText = text;
 
-  if(!el || !txt) return;
-
-  txt.innerText = ok ? "Success" : "Failed";
-
-  setTimeout(()=>{
-    el.style.display = "none";
-  },800);
+  roller.style.display = "flex";
 }
+
+function hideRoller(success = true) {
+  const roller = document.getElementById("rollerOverlay");
+  if (roller) roller.style.display = "none";
+
+  if (success) {
+    showToast("✅ Success");
+  } else {
+    showToast("❌ Failed");
+  }
+}
+
+// toast helper
+function showToast(msg) {
+  let toast = document.getElementById("successToast");
+  if (!toast) return;
+
+  toast.querySelector(".toastBox").innerText = msg;
+  toast.style.display = "block";
+
+  setTimeout(() => {
+    toast.style.display = "none";
+  }, 2500);
+}
+
 // =======================
 // SUPABASE INIT
 // =======================
@@ -89,20 +113,18 @@ function openContact(){ contactOverlay.style.display="flex"; }
 // ADMIN
 // =======================
 function adminClick() {
-  console.log("Admin button clicked");
+  const login = document.getElementById("adminLogin");
+  const panel = document.getElementById("adminPanel");
 
-  const loginBox = document.getElementById("adminLogin");
-  const panelBox = document.getElementById("adminPanel");
-
-  if (!loginBox || !panelBox) {
-    alert("Admin UI missing in HTML");
+  if (!login || !panel) {
+    alert("Admin UI missing");
     return;
   }
 
-  if (admin === true) {
-    panelBox.style.display = "flex";
+  if (admin) {
+    panel.style.display = "flex";
   } else {
-    loginBox.style.display = "flex";
+    login.style.display = "flex";
   }
 }
 
@@ -139,28 +161,40 @@ async function adminLogin(){
 //  ================
 // POSTS
 // =======================
-async function loadPosts(){
-
-  const { data } = await db
+async function loadPosts() {
+  const { data, error } = await db
     .from("posts")
     .select("*")
-    .order("id",{ascending:false});
+    .order("id", { ascending: false });
+
+  if (error) {
+    console.log(error);
+    return;
+  }
 
   const container = document.getElementById("posts");
+  if (!container) return;
+
   container.innerHTML = "";
 
-  if(!data) return;
-
-  data.forEach(p=>{
-
+  data.forEach(p => {
     const div = document.createElement("div");
-    div.className="post";
+    div.className = "post";
 
-    div.innerHTML=`
-      <h3>${p.title}</h3>
-      <p>${p.body}</p>
-      ${renderMedia(p.media || "")}
-      <div>ID: ${p.id}</div>
+    div.innerHTML = `
+      <h3>${p.title || ""}</h3>
+      <p>${p.body || ""}</p>
+
+      ${renderMedia(p.media)}
+
+      <div class="actions">
+        <span onclick="likePost(${p.id})">❤️ Like</span>
+        <span onclick="commentPost(${p.id})">💬 Comment</span>
+        <span onclick="sharePost(${p.id})">🔗 Share</span>
+        <span onclick="downloadMedia('${p.media || ""}')">⬇ Download</span>
+      </div>
+
+      <div style="font-size:12px;color:gray;">ID: ${p.id}</div>
     `;
 
     container.appendChild(div);
