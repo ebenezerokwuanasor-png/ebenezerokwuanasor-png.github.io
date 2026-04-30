@@ -14,19 +14,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
 window.adminLogin = async function () {
 
-  // SAFE fallback if roller missing
-  const useRoller = typeof showRoller === "function";
+  showRoller("Checking fields...");
 
-  if (useRoller) showRoller("Logging in...");
-
-  const email = document.getElementById("adminEmail")?.value;
-  const password = document.getElementById("adminPass")?.value;
+  const email = adminEmail.value;
+  const password = adminPass.value;
 
   if (!email || !password) {
-    if (useRoller) hideRoller();
-    alert("Missing login fields");
+    errorRoller("Missing fields");
     return;
   }
+
+  updateRoller("Logging in...");
 
   const { error } = await db.auth.signInWithPassword({
     email,
@@ -34,21 +32,21 @@ window.adminLogin = async function () {
   });
 
   if (error) {
-    if (useRoller) hideRoller();
-    alert("❌ Wrong password");
+    errorRoller("Wrong email or password");
     return;
   }
 
   window.admin = true;
   localStorage.setItem("admin", "true");
 
-  if (useRoller) hideRoller();
+  successRoller("Login successful");
 
-  document.getElementById("adminLogin").style.display = "none";
-  document.getElementById("adminPanel").style.display = "flex";
-
-  alert("Login successful");
+  setTimeout(() => {
+    adminLogin.style.display = "none";
+    adminPanel.style.display = "flex";
+  }, 900);
 };
+
 
 // ==========================
 // 🔔 TOAST SYSTEM
