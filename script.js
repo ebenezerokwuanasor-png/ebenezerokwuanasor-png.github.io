@@ -1,9 +1,3 @@
-// =======================
-// LOGIN SECURITY SYSTEM
-// =======================
-let loginAttempts = 0;
-let lockedUntil = 0;
-
 console.log("SCRIPT LOADED ✅");
 
 // =======================
@@ -13,7 +7,57 @@ const SUPABASE_URL = "https://fjiwrdecjftkflchjptr.supabase.co";
 const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqaXdyZGVjamZ0a2ZsY2hqcHRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5Nzk0OTQsImV4cCI6MjA4ODU1NTQ5NH0.tXe06ol03x8M0FLfk55_Wj6A2Y3mNny5t028gqZzYoU";
 
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+window.changeFavicon = function () {
 
+  if (!window.admin) return alert("Admin only!");
+
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = "image/png,image/jpeg,image/webp";
+
+  input.onchange = async () => {
+
+    const file = input.files[0];
+    if (!file) return;
+
+    showRoller("Uploading favicon...");
+
+    try {
+
+      const fileName = "favicon.png";
+
+      const { error } = await db.storage
+        .from("favicon")
+        .upload(fileName, file, {
+          upsert: true
+        });
+
+      if (error) {
+        hideRoller(false);
+        alert("Upload failed: " + error.message);
+        return;
+      }
+
+      // refresh favicon instantly
+      const url = `${SUPABASE_URL}/storage/v1/object/public/favicon/${fileName}`;
+
+      const icon = document.getElementById("faviconTag");
+      const sidebarIcon = document.getElementById("sidebarFavicon");
+
+      if (icon) icon.href = url;
+      if (sidebarIcon) sidebarIcon.src = url;
+
+      hideRoller(true);
+      toast("Favicon updated", true);
+
+    } catch (err) {
+      hideRoller(false);
+      alert("Unexpected error");
+    }
+  };
+
+  input.click();
+};
 // =======================
 // STATE
 // =======================
@@ -34,9 +78,15 @@ window.watchAds = watchAds;
 // =======================
 window.onload = async () => {
   try {
+
+    // AUTO ADMIN SESSION
+    if (localStorage.getItem("admin") === "true") {
+      window.admin = true;
+    }
+
     if (typeof loadPosts === "function") loadPosts();
     if (typeof setupRealtime === "function") setupRealtime();
-    if (typeof loadFavicon === "function") loadFavicon();
+
   } catch (e) {
     console.log("Init error:", e);
   }
@@ -46,7 +96,7 @@ window.onload = async () => {
 // UI FIX
 // =======================
 
-// =======================
+// =====function=============
 // SIDEBAR FIX (100% SAFE)
 // =======================
 window.toggleSidebar = function () {
@@ -248,46 +298,17 @@ function setupRealtime(){
     )
     .subscribe();
 }
-
-// =======================
-// LOGOUT
-// =======================
-async function adminLogout(){
+window.adminLogout = async function () {
 
   showRoller("Logging out...");
 
   await db.auth.signOut();
 
-  admin=false;
-  document.getElementById("adminPanel").style.display="none";
+  window.admin = false;
+  localStorage.removeItem("admin");
 
   hideRoller(true);
-}
+  toast("Logged out", true);
 
-async function changeFavicon(){
-
-  if(!admin) return alert("Admin only!");
-
-  const input = document.createElement("input");
-  input.type="file";
-
-  input.onchange = async ()=>{
-
-    showRoller("Uploading favicon...");
-
-    const file = input.files[0];
-
-    const { error } = await db.storage
-      .from("favicon")
-      .upload("favicon.png", file, { upsert:true });
-
-    if(error){
-      hideRoller(false);
-      return alert(error.message);
-    }
-
-    hideRoller(true);
-  };
-
-  input.click();
-}
+  document.getElementById("adminPanel").style.display = "none";
+};
