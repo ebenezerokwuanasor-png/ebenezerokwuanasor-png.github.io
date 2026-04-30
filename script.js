@@ -1,3 +1,28 @@
+function showRoller(msg="Please wait..."){
+  const el = document.getElementById("rollerOverlay");
+  const txt = document.getElementById("rollerText");
+
+  if(!el || !txt){
+    console.log("ROLLER MISSING");
+    return;
+  }
+
+  txt.innerText = msg;
+  el.style.display = "flex";
+}
+
+function hideRoller(ok=true){
+  const el = document.getElementById("rollerOverlay");
+  const txt = document.getElementById("rollerText");
+
+  if(!el || !txt) return;
+
+  txt.innerText = ok ? "Success" : "Failed";
+
+  setTimeout(()=>{
+    el.style.display = "none";
+  },800);
+}
 // =======================
 // SUPABASE INIT
 // =======================
@@ -92,11 +117,14 @@ async function adminLogin(){
   const email = document.getElementById("adminEmail").value;
   const password = document.getElementById("adminPass").value;
 
-  const { error } = await db.auth.signInWithPassword({ email, password });
+  const { error } = await db.auth.signInWithPassword({
+    email,
+    password
+  });
 
   if(error){
     hideRoller(false);
-    alert(error.message);
+    alert("Login failed: " + error.message);
     return;
   }
 
@@ -108,7 +136,7 @@ async function adminLogin(){
   hideRoller(true);
 }
 
-  async================
+//  ================
 // POSTS
 // =======================
 async function loadPosts(){
@@ -209,18 +237,6 @@ function searchPosts(){
       p.innerText.toLowerCase().includes(q)
       ? "block":"none";
   });
-}
-
-async function adminLogout(){
-
-  showRoller("Logging out...");
-
-  await db.auth.signOut();
-
-  admin=false;
-  document.getElementById("adminPanel").style.display="none";
-
-  hideRoller(true);
 }
 
 // =======================
