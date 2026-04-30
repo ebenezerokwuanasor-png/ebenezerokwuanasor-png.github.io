@@ -317,3 +317,16 @@ font-size:20px;
   90%{opacity:1;}
   100%{opacity:0; transform:translateY(20px);}
 }
+
+  #rollerOverlay{
+  position:fixed !important;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.6);
+  display:none;
+  justify-content:center;
+  align-items:center;
+  z-index:999999 !important;
+}
