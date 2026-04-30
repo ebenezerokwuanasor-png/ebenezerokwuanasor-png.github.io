@@ -1,3 +1,9 @@
+// =======================
+// LOGIN SECURITY SYSTEM
+// =======================
+let loginAttempts = 0;
+let lockedUntil = 0;
+
 console.log("SCRIPT LOADED ✅");
 
 // =======================
