@@ -1,4 +1,4 @@
-console.log("SCRIPT FIXED ✅");
+ console.log("SCRIPT FIXED ✅");
 
 // =======================
 // SUPABASE INIT
@@ -133,6 +133,7 @@ async function loadPosts(){
 
     container.appendChild(div);
   });
+  <div style="font-size:12px;color:gray;">Post ID: ${p.id}</div>
 }
 
 // =======================
@@ -144,32 +145,63 @@ window.createPost = async function(){
 
   const title = postTitle.value.trim();
   const body = postBody.value.trim();
+  const file = mediaFile.files[0];
+  const url = mediaURL.value.trim();
 
   if(!title || !body){
-    errorRoller("Missing fields");
-    return;
+    return errorRoller("Title & body required");
   }
 
   showRoller("Publishing post...");
 
-  const { error } = await db.from("posts").insert({
-    title,
-    body,
-    media: mediaURL.value
-  });
+  let media = url;
 
-  if(error){
-    errorRoller("Failed");
-    return;
+  try {
+
+    // ✅ FILE UPLOAD (if selected)
+    if(file){
+      updateRoller("Uploading media...");
+
+      const fileName = Date.now() + "_" + file.name;
+
+      const { error: uploadError } = await db.storage
+        .from("posts")
+        .upload(fileName, file);
+
+      if(uploadError) throw uploadError;
+
+      const res = db.storage.from("posts").getPublicUrl(fileName);
+      media = res.data.publicUrl;
+    }
+
+    // ✅ SAVE POST
+    updateRoller("Saving post...");
+
+    const id = "POST_" + Math.random().toString(36).substring(2,10);
+
+    const { error } = await db.from("posts").insert({
+      id,
+      title,
+      body,
+      media
+    });
+
+    if(error) throw error;
+
+    successRoller("Post published");
+
+    // clear inputs
+    postTitle.value="";
+    postBody.value="";
+    mediaFile.value="";
+    mediaURL.value="";
+
+    loadPosts();
+
+  } catch(e){
+    console.log(e);
+    errorRoller("Post failed");
   }
-
-  successRoller("Post uploaded");
-
-  postTitle.value="";
-  postBody.value="";
-  mediaURL.value="";
-
-  loadPosts();
 };
 
 // =======================
@@ -179,16 +211,20 @@ window.deletePost = async function(){
 
   if(!admin) return errorRoller("Admin only");
 
-  const id = prompt("Post ID");
+  const id = prompt("Enter Post ID");
   if(!id) return;
 
   showRoller("Deleting post...");
 
-  await db.from("posts").delete().eq("id", id);
+  const { error } = await db.from("posts").delete().eq("id", id);
 
-  successRoller("Deleted");
+  if(error){
+    return errorRoller("Delete failed");
+  }
+
+  successRoller("Post deleted");
   loadPosts();
-};
+}; 
 
 // =======================
 // FAVICON
@@ -198,24 +234,43 @@ window.changeFavicon = function(){
   if(!admin) return errorRoller("Admin only");
 
   const input = document.createElement("input");
-  input.type="file";
+  input.type = "file";
+  input.accept = "image/png";
 
   input.onchange = async ()=>{
+
     const file = input.files[0];
     if(!file) return;
 
-    showRoller("Uploading favicon...");
+    const img = new Image();
 
-    const { error } = await db.storage
-      .from("favicon")
-      .upload("favicon.png", file, { upsert:true });
+    img.onload = async ()=>{
 
-    if(error){
-      errorRoller("Upload failed");
-      return;
-    }
+      // ✅ SIZE CHECK
+      if(img.width !== 128 || img.height !== 128){
+        return errorRoller("Image must be 128x128");
+      }
 
-    successRoller("Favicon updated");
+      showRoller("Uploading favicon...");
+
+      const { error } = await db.storage
+        .from("favicon")
+        .upload("favicon.png", file, { upsert:true });
+
+      if(error){
+        return errorRoller("Upload failed");
+      }
+
+      // ✅ UPDATE UI
+      const url = SUPABASE_URL + "/storage/v1/object/public/favicon/favicon.png";
+
+      document.getElementById("faviconTag").href = url;
+      document.getElementById("sidebarFavicon").src = url;
+
+      successRoller("Favicon updated");
+    };
+
+    img.src = URL.createObjectURL(file);
   };
 
   input.click();
