@@ -1,16 +1,21 @@
-// =======================
-// PERFECT ROLLER SYSTEM
-// =======================
-
 window.showRoller = function(text="Please wait..."){
   let r = document.getElementById("rollerOverlay");
-  if(!r) return;
 
-  r.classList.remove("success","error");
+  if(!r){
+    r = document.createElement("div");
+    r.id = "rollerOverlay";
+    r.className = "rollerOverlay";
+    r.innerHTML = `
+      <div class="rollerBox">
+        <div class="spinner"></div>
+        <p id="rollerText"></p>
+      </div>
+    `;
+    document.body.appendChild(r);
+  }
+
+  document.getElementById("rollerText").innerText = text;
   r.style.display = "flex";
-
-  const t = document.getElementById("rollerText");
-  if(t) t.innerText = text;
 };
 
 window.updateRoller = function(text){
@@ -18,32 +23,12 @@ window.updateRoller = function(text){
   if(t) t.innerText = text;
 };
 
-window.successRoller = function(msg="Success"){
-  const r = document.getElementById("rollerOverlay");
-
-  if(r){
-    r.classList.add("success");
-    r.classList.remove("error");
-  }
-
-  updateRoller(msg);
-
-  setTimeout(()=>{
-    r.style.display = "none";
-  },1000);
+window.successRoller = function(text="Success"){
+  updateRoller(text);
+  setTimeout(()=> document.getElementById("rollerOverlay").style.display="none", 900);
 };
 
-window.errorRoller = function(msg="Failed"){
-  const r = document.getElementById("rollerOverlay");
-
-  if(r){
-    r.classList.add("error");
-    r.classList.remove("success");
-  }
-
-  updateRoller(msg);
-
-  setTimeout(()=>{
-    r.style.display = "none";
-  },1500);
+window.errorRoller = function(text="Failed"){
+  updateRoller(text);
+  setTimeout(()=> document.getElementById("rollerOverlay").style.display="none", 1200);
 };
