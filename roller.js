@@ -1,66 +1,37 @@
-const roller = document.getElementById("rollerOverlay");
-const text = document.getElementById("rollerText");
+// =======================
+// ROLLER SYSTEM
+// =======================
 
-function ensureRoller() {
-  if (!roller) console.warn("ROLLER NOT FOUND");
-  return roller && text;
-}
+window.showRoller = function(text="Please wait..."){
+  const r = document.getElementById("rollerOverlay");
+  const t = document.getElementById("rollerText");
 
-// ==========================
-// SHOW LOADING STATE
-// ==========================
-window.showRoller = function (msg = "Please wait...") {
-  if (!ensureRoller()) return;
+  if(!r) return;
 
-  roller.style.display = "flex";
-  roller.className = "rollerOverlay show";
-
-  text.innerText = msg;
+  r.style.display = "flex";
+  if(t) t.innerText = text;
 };
 
-// ==========================
-// UPDATE MESSAGE ONLY
-// ==========================
-window.updateRoller = function (msg) {
-  if (!ensureRoller()) return;
-  text.innerText = msg;
+window.hideRoller = function(success=true){
+  const r = document.getElementById("rollerOverlay");
+  if(r) r.style.display = "none";
+
+  if(success){
+    showToast("✅ Success");
+  }else{
+    showToast("❌ Failed");
+  }
 };
 
-// ==========================
-// SUCCESS STATE
-// ==========================
-window.successRoller = function (msg = "Success") {
-  if (!ensureRoller()) return;
+// =======================
+// TOAST
+// =======================
+window.showToast = function(msg){
+  let toast = document.getElementById("successToast");
+  if(!toast) return;
 
-  text.innerText = msg;
-  roller.className = "rollerOverlay success";
+  toast.querySelector(".toastBox").innerText = msg;
+  toast.style.display = "block";
 
-  setTimeout(() => {
-    roller.style.display = "none";
-    roller.className = "rollerOverlay";
-  }, 900);
-};
-
-// ==========================
-// ERROR STATE
-// ==========================
-window.errorRoller = function (msg = "Failed") {
-  if (!ensureRoller()) return;
-
-  text.innerText = msg;
-  roller.className = "rollerOverlay error";
-
-  setTimeout(() => {
-    roller.style.display = "none";
-    roller.className = "rollerOverlay";
-  }, 1200);
-};
-
-// ==========================
-// FORCE CLOSE
-// ==========================
-window.hideRoller = function () {
-  if (!roller) return;
-  roller.style.display = "none";
-  roller.className = "rollerOverlay";
+  setTimeout(()=> toast.style.display="none", 2500);
 };
