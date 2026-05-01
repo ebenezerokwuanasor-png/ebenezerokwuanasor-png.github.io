@@ -50,45 +50,51 @@ window.adminClick = function(){
 // =======================
 window.adminLogin = async function(){
 
-  const email = adminEmail.value.trim();
-  const password = adminPass.value.trim();
+  try {
 
-  if(!email || !password){
-    errorRoller("Fill all fields");
-    return;
+    const email = adminEmail.value.trim();
+    const password = adminPass.value.trim();
+
+    if(!email || !password){
+      errorRoller("Fill all fields");
+      return;
+    }
+
+    showRoller("Logging in...");
+
+    const { data, error } = await db.auth.signInWithPassword({
+      email,
+      password
+    });
+
+    if(error){
+      errorRoller("Wrong email or password");
+      adminPass.value = "";
+      return;
+    }
+
+    if(!data.session){
+      errorRoller("Login failed");
+      return;
+    }
+
+    // SUCCESS
+    admin = true;
+    localStorage.setItem("admin","true");
+
+    successRoller("Login successful");
+
+    document.getElementById("adminLogin").style.display = "none";
+    document.getElementById("adminPanel").style.display = "flex";
+
+    adminEmail.value = "";
+    adminPass.value = "";
+
+  } catch(e){
+    console.log(e);
+    errorRoller("System error");
   }
-
-  showRoller("Logging in...");
-
-  const { data, error } = await db.auth.signInWithPassword({
-    email,
-    password
-  });
-
-  if(error){
-    errorRoller("Wrong login");
-    adminPass.value="";
-    return;
-  }
-
-  if(!data.session){
-    errorRoller("Login failed");
-    return;
-  }
-
-  // SUCCESS
-  admin = true;
-  localStorage.setItem("admin","true");
-
-  document.getElementById("adminLogin").style.display="none";
-  document.getElementById("adminPanel").style.display="flex";
-
-  successRoller("Welcome Admin");
-
-  adminEmail.value="";
-  adminPass.value="";
 };
-
 // =======================
 // LOGOUT
 // =======================
