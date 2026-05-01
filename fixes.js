@@ -12,24 +12,6 @@ document.addEventListener("DOMContentLoaded", () => {
 }); 
 
 
-// ==========================
-// 🔔 TOAST SYSTEM
-// ==========================
-window.toast = function (msg, success = true) {
-  const box = document.getElementById("successToast");
-  if (!box) return;
-
-  const inner = box.querySelector(".toastBox");
-  if (inner) {
-    inner.innerText = (success ? "✅ " : "❌ ") + msg;
-  }
-
-  box.style.display = "block";
-
-  setTimeout(() => {
-    box.style.display = "none";
-  }, 2500);
-};
 
 // ==========================
 // ❌ CLOSE BUTTON FIX
