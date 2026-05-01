@@ -47,6 +47,51 @@ window.changeFavicon = function () {
   input.click();
 };
 
+async function adminLogin(){
+
+  const email = document.getElementById("adminEmail").value.trim();
+  const password = document.getElementById("adminPass").value.trim();
+
+  if(!email || !password){
+    showToast("❌ Fill all fields");
+    return;
+  }
+
+  showRoller("Logging in...");
+
+  const { data, error } = await db.auth.signInWithPassword({
+    email,
+    password
+  });
+
+  if(error){
+    hideRoller(false);
+
+    document.getElementById("adminEmail").value = "";
+    document.getElementById("adminPass").value = "";
+
+    return;
+  }
+
+  if(!data || !data.session){
+    hideRoller(false);
+    showToast("❌ Login failed");
+    return;
+  }
+
+  // ✅ SUCCESS
+  admin = true;
+
+  document.getElementById("adminLogin").style.display = "none";
+  document.getElementById("adminPanel").style.display = "flex";
+
+  hideRoller(true);
+
+  // clear inputs
+  document.getElementById("adminEmail").value = "";
+  document.getElementById("adminPass").value = "";
+}
+
 // =======================
 // STATE
 // =======================
@@ -337,3 +382,5 @@ window.adminLogout = async function () {
     adminPanel.style.display = "none";
   }, 800);
 };
+
+window.adminLogin = adminLogin;
