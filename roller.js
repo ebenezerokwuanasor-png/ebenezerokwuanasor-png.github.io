@@ -1,63 +1,49 @@
 // =======================
-// ROLLER SYSTEM (FORCED SAFE)
+// PERFECT ROLLER SYSTEM
 // =======================
 
 window.showRoller = function(text="Please wait..."){
-
   let r = document.getElementById("rollerOverlay");
+  if(!r) return;
 
-  // 🔥 AUTO-CREATE if missing
-  if(!r){
-    r = document.createElement("div");
-    r.id = "rollerOverlay";
-    r.className = "rollerOverlay";
-
-    r.innerHTML = `
-      <div class="rollerBox">
-        <div class="spinner"></div>
-        <p id="rollerText">${text}</p>
-      </div>
-    `;
-
-    document.body.appendChild(r);
-  }
-
+  r.classList.remove("success","error");
   r.style.display = "flex";
 
   const t = document.getElementById("rollerText");
   if(t) t.innerText = text;
 };
 
-window.hideRoller = function(success=true){
-  const r = document.getElementById("rollerOverlay");
-
-  if(r) r.style.display = "none";
-
-  if(success){
-    showToast("✅ Done");
-  }else{
-    showToast("❌ Failed");
-  }
+window.updateRoller = function(text){
+  const t = document.getElementById("rollerText");
+  if(t) t.innerText = text;
 };
 
-// =======================
-// TOAST
-// =======================
-window.showToast = function(msg){
+window.successRoller = function(msg="Success"){
+  const r = document.getElementById("rollerOverlay");
 
-  let toast = document.getElementById("successToast");
-
-  // 🔥 auto-create toast if missing
-  if(!toast){
-    toast = document.createElement("div");
-    toast.id = "successToast";
-
-    toast.innerHTML = `<div class="toastBox">${msg}</div>`;
-    document.body.appendChild(toast);
+  if(r){
+    r.classList.add("success");
+    r.classList.remove("error");
   }
 
-  toast.querySelector(".toastBox").innerText = msg;
-  toast.style.display = "block";
+  updateRoller(msg);
 
-  setTimeout(()=> toast.style.display="none", 2500);
+  setTimeout(()=>{
+    r.style.display = "none";
+  },1000);
+};
+
+window.errorRoller = function(msg="Failed"){
+  const r = document.getElementById("rollerOverlay");
+
+  if(r){
+    r.classList.add("error");
+    r.classList.remove("success");
+  }
+
+  updateRoller(msg);
+
+  setTimeout(()=>{
+    r.style.display = "none";
+  },1500);
 };
