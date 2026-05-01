@@ -1,4 +1,4 @@
-console.log("SCRIPT LOADED ✅");
+console.log("SCRIPT FIXED ✅");
 
 // =======================
 // SUPABASE INIT
@@ -7,53 +7,54 @@ const SUPABASE_URL = "https://fjiwrdecjftkflchjptr.supabase.co";
 const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqaXdyZGVjamZ0a2ZsY2hqcHRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5Nzk0OTQsImV4cCI6MjA4ODU1NTQ5NH0.tXe06ol03x8M0FLfk55_Wj6A2Y3mNny5t028gqZzYoU";
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
+// =======================
+// STATE
+// =======================
 let admin = false;
+let theme = false;
 
-function resetInputs() {
-  adminEmail.value = "";
-  adminPass.value = "";
-  postTitle.value = "";
-  postBody.value = "";
-  mediaFile.value = "";
-  mediaURL.value = "";
-}
+// =======================
+// INIT
+// =======================
+window.onload = async () => {
 
-window.changeFavicon = function () {
+  // restore session
+  if(localStorage.getItem("admin")==="true"){
+    admin = true;
+  }
 
-  if (!window.admin) return errorRoller("Admin only");
-
-  const input = document.createElement("input");
-  input.type = "file";
-
-  input.onchange = async () => {
-
-    const file = input.files[0];
-    if (!file) return;
-
-    showRoller("Uploading favicon...");
-
-    const { error } = await db.storage
-      .from("favicon")
-      .upload("favicon.png", file, { upsert: true });
-
-    if (error) {
-      errorRoller("Upload failed");
-      return;
-    }
-
-    successRoller("Favicon updated");
-  };
-
-  input.click();
+  loadPosts();
+  setupRealtime();
 };
 
-async function adminLogin(){
+// =======================
+// SIDEBAR
+// =======================
+window.toggleSidebar = function(){
+  document.getElementById("sidebar").classList.toggle("open");
+};
 
-  const email = document.getElementById("adminEmail").value.trim();
-  const password = document.getElementById("adminPass").value.trim();
+// =======================
+// ADMIN CLICK
+// =======================
+window.adminClick = function(){
+  if(admin){
+    openOverlay("adminPanel");
+  }else{
+    openOverlay("adminLogin");
+  }
+};
+
+// =======================
+// LOGIN (FINAL)
+// =======================
+window.adminLogin = async function(){
+
+  const email = adminEmail.value.trim();
+  const password = adminPass.value.trim();
 
   if(!email || !password){
-    showToast("❌ Fill all fields");
+    errorRoller("Fill all fields");
     return;
   }
 
@@ -65,151 +66,69 @@ async function adminLogin(){
   });
 
   if(error){
-    hideRoller(false);
-
-    document.getElementById("adminEmail").value = "";
-    document.getElementById("adminPass").value = "";
-
+    errorRoller("Wrong login");
+    adminPass.value="";
     return;
   }
 
-  if(!data || !data.session){
-    hideRoller(false);
-    showToast("❌ Login failed");
+  if(!data.session){
+    errorRoller("Login failed");
     return;
   }
 
-  // ✅ SUCCESS
+  // SUCCESS
   admin = true;
+  localStorage.setItem("admin","true");
 
-  document.getElementById("adminLogin").style.display = "none";
-  document.getElementById("adminPanel").style.display = "flex";
+  document.getElementById("adminLogin").style.display="none";
+  document.getElementById("adminPanel").style.display="flex";
 
-  hideRoller(true);
+  successRoller("Welcome Admin");
 
-  // clear inputs
-  document.getElementById("adminEmail").value = "";
-  document.getElementById("adminPass").value = "";
-}
-
-// =======================
-// STATE
-// =======================
-let admin = false;
-let theme = false;
-
-// =======================
-// WINDOW EXPORT FIX
-// =======================
-window.adminClick = adminClick;
-window.adminLogout = adminLogout;
-window.searchPosts = searchPosts;
-window.toggleTheme = toggleTheme;
-window.watchAds = watchAds;
-
-// =======================
-// INIT
-// =======================
-window.onload = async () => {
-  try {
-
-    // AUTO ADMIN SESSION
-    if (localStorage.getItem("admin") === "true") {
-      window.admin = true;
-    }
-
-    if (typeof loadPosts === "function") loadPosts();
-    if (typeof setupRealtime === "function") setupRealtime();
-
-  } catch (e) {
-    console.log("Init error:", e);
-  }
+  adminEmail.value="";
+  adminPass.value="";
 };
 
 // =======================
-// UI FIX
+// LOGOUT
 // =======================
+window.adminLogout = async function(){
 
-// ==================
-// SIDEBAR FIX (100% SAFE)
-// =======================
-window.toggleSidebar = function () {
-  const sidebar = document.getElementById("sidebar");
+  showRoller("Logging out...");
 
-  if (!sidebar) {
-    console.log("Sidebar element not found");
-    return;
-  }
+  await db.auth.signOut();
 
-  sidebar.classList.toggle("open");
+  admin = false;
+  localStorage.removeItem("admin");
+
+  adminPanel.style.display="none";
+
+  successRoller("Logged out");
 };
 
-function closeOverlay(id){
-  document.getElementById(id).style.display="none";
-}
-
-function togglePassword(){
-  const p = document.getElementById("adminPass");
-  p.type = p.type === "password" ? "text" : "password";
-}
-
 // =======================
-// OVERLAYS
-// =======================
-function openAbout(){ aboutOverlay.style.display="flex"; }
-function openPrivacy(){ privacyOverlay.style.display="flex"; }
-function openTerms(){ termsOverlay.style.display="flex"; }
-function openContact(){ contactOverlay.style.display="flex"; }
-
-// =======================
-// ADMIN
-// =======================
-function adminClick() {
-
-  if (admin) {
-    openOverlay("adminPanel");
-  } else {
-    openOverlay("adminLogin");
-  }
-}
-
-//  ================
 // POSTS
 // =======================
-async function loadPosts() {
-  const { data, error } = await db
+async function loadPosts(){
+
+  const { data } = await db
     .from("posts")
     .select("*")
-    .order("id", { ascending: false });
-
-  if (error) {
-    console.log(error);
-    return;
-  }
+    .order("id",{ascending:false});
 
   const container = document.getElementById("posts");
-  if (!container) return;
+  container.innerHTML="";
 
-  container.innerHTML = "";
+  if(!data) return;
 
-  data.forEach(p => {
+  data.forEach(p=>{
     const div = document.createElement("div");
-    div.className = "post";
+    div.className="post";
 
-    div.innerHTML = `
-      <h3>${p.title || ""}</h3>
-      <p>${p.body || ""}</p>
-
+    div.innerHTML=`
+      <h3>${p.title}</h3>
+      <p>${p.body}</p>
       ${renderMedia(p.media)}
-
-      <div class="actions">
-        <span onclick="likePost(${p.id})">❤️ Like</span>
-        <span onclick="commentPost(${p.id})">💬 Comment</span>
-        <span onclick="sharePost(${p.id})">🔗 Share</span>
-        <span onclick="downloadMedia('${p.media || ""}')">⬇ Download</span>
-      </div>
-
-      <div style="font-size:12px;color:gray;">ID: ${p.id}</div>
     `;
 
     container.appendChild(div);
@@ -217,139 +136,110 @@ async function loadPosts() {
 }
 
 // =======================
-// MEDIA
-// =======================
-function renderMedia(url){
-  if(!url) return "";
-
-  if(url.match(/\.(mp4|webm)$/)) return `<video controls src="${url}"></video>`;
-  if(url.match(/\.(mp3|wav)$/)) return `<audio controls src="${url}"></audio>`;
-
-  return `<img src="${url}">`;
-}
-
-// =======================
 // CREATE POST
 // =======================
-window.createPost = async function () {
+window.createPost = async function(){
 
-  if (!window.admin) return errorRoller("Admin only");
-
-  showRoller("Uploading post...");
+  if(!admin) return errorRoller("Admin only");
 
   const title = postTitle.value.trim();
   const body = postBody.value.trim();
-  const file = mediaFile.files[0];
-  const url = mediaURL.value.trim();
 
-  if (!title || !body) {
-    errorRoller("Title or body missing");
+  if(!title || !body){
+    errorRoller("Missing fields");
     return;
   }
 
-  let media = url;
+  showRoller("Publishing post...");
 
-  try {
+  const { error } = await db.from("posts").insert({
+    title,
+    body,
+    media: mediaURL.value
+  });
 
-    if (file) {
-      updateRoller("Uploading media...");
-
-      const fileName = Date.now() + "_" + file.name;
-
-      const { error } = await db.storage
-        .from("posts")
-        .upload(fileName, file);
-
-      if (error) throw error;
-
-      const res = db.storage.from("posts").getPublicUrl(fileName);
-      media = res.data.publicUrl;
-    }
-
-    updateRoller("Saving post...");
-
-    const { error } = await db.from("posts").insert({
-      title,
-      body,
-      media
-    });
-
-    if (error) throw error;
-
-    successRoller("Post uploaded");
-
-    postTitle.value = "";
-    postBody.value = "";
-    mediaFile.value = "";
-    mediaURL.value = "";
-
-    loadPosts();
-
-  } catch (e) {
-    errorRoller("Upload failed");
+  if(error){
+    errorRoller("Failed");
+    return;
   }
+
+  successRoller("Post uploaded");
+
+  postTitle.value="";
+  postBody.value="";
+  mediaURL.value="";
+
+  loadPosts();
 };
 
 // =======================
 // DELETE POST
 // =======================
+window.deletePost = async function(){
 
-  async function deletePost(){
+  if(!admin) return errorRoller("Admin only");
 
   const id = prompt("Post ID");
   if(!id) return;
 
   showRoller("Deleting post...");
 
-  const { error } = await db.from("posts").delete().eq("id", id);
+  await db.from("posts").delete().eq("id", id);
 
-  if(error){
-    hideRoller(false);
-    return alert(error.message);
-  }
-
+  successRoller("Deleted");
   loadPosts();
-  hideRoller(true);
+};
+
+// =======================
+// FAVICON
+// =======================
+window.changeFavicon = function(){
+
+  if(!admin) return errorRoller("Admin only");
+
+  const input = document.createElement("input");
+  input.type="file";
+
+  input.onchange = async ()=>{
+    const file = input.files[0];
+    if(!file) return;
+
+    showRoller("Uploading favicon...");
+
+    const { error } = await db.storage
+      .from("favicon")
+      .upload("favicon.png", file, { upsert:true });
+
+    if(error){
+      errorRoller("Upload failed");
+      return;
+    }
+
+    successRoller("Favicon updated");
+  };
+
+  input.click();
+};
+
+// =======================
+// MEDIA
+// =======================
+function renderMedia(url){
+  if(!url) return "";
+  if(url.match(/\.(mp4|webm)$/)) return `<video controls src="${url}"></video>`;
+  if(url.match(/\.(mp3|wav)$/)) return `<audio controls src="${url}"></audio>`;
+  return `<img src="${url}">`;
 }
 
 // =======================
 // SEARCH
 // =======================
-function searchPosts(){
+window.searchPosts = function(){
   let q = searchInput.value.toLowerCase();
-
   document.querySelectorAll(".post").forEach(p=>{
-    p.style.display =
-      p.innerText.toLowerCase().includes(q)
-      ? "block":"none";
+    p.style.display = p.innerText.toLowerCase().includes(q) ? "block":"none";
   });
-}
-
-// =======================
-// ADS
-// =======================
-function watchAds(){
-  adOverlay.style.display="flex";
-
-  const script = document.createElement("script");
-  script.src="https://pl29052599.profitablecpmratenetwork.com/24/cb/b7/24cbb72257475dcd544b0346aee1dd35.js";
-
-  adContainer.innerHTML="";
-  adContainer.appendChild(script);
-
-  setTimeout(()=>{
-    adOverlay.style.display="none";
-  },7000);
-}
-
-// =======================
-// THEME
-// =======================
-function toggleTheme(){
-  theme=!theme;
-  document.body.style.background = theme ? "#ddd":"#f2f2f2";
-  document.body.style.color="#111";
-}
+};
 
 // =======================
 // REALTIME
@@ -362,25 +252,3 @@ function setupRealtime(){
     )
     .subscribe();
 }
-
-window.adminLogout = async function () {
-
-  showRoller("Logging out...");
-
-  await db.auth.signOut();
-
-  window.admin = false;
-  localStorage.removeItem("admin");
-
-  // clear inputs
-  adminEmail.value = "";
-  adminPass.value = "";
-
-  successRoller("Logged out");
-
-  setTimeout(() => {
-    adminPanel.style.display = "none";
-  }, 800);
-};
-
-window.adminLogin = adminLogin;
