@@ -1,4 +1,3 @@
-window.adminLogin = adminLogin;
 
 // ==========================
 // FIXES.JS (CLEAN STABLE VERSION)
@@ -12,50 +11,6 @@ document.addEventListener("DOMContentLoaded", () => {
   fixPasswordEye();
 }); 
 
-window.adminLogin = async function () {
-
-  showRoller("Checking fields...");
-
-  const emailInput = document.getElementById("adminEmail");
-  const passInput = document.getElementById("adminPass");
-
-  const email = emailInput.value.trim();
-  const password = passInput.value.trim();
-
-  if (!email || !password) {
-    errorRoller("Missing email or password");
-
-    emailInput.value = "";
-    passInput.value = "";
-    return;
-  }
-
-  updateRoller("Logging in...");
-
-  const { error } = await db.auth.signInWithPassword({
-    email,
-    password
-  });
-
-  if (error) {
-    errorRoller("Login failed");
-
-    emailInput.value = "";
-    passInput.value = "";
-    return;
-  }
-
-  successRoller("Login successful");
-
-  window.admin = true;
-  localStorage.setItem("admin", "true");
-
-  setTimeout(() => {
-    adminLogin.style.display = "none";
-    openOverlay("adminPanel");
-closeOverlay("adminLogin");
-  }, 800);
-};
 
 // ==========================
 // 🔔 TOAST SYSTEM
